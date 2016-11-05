@@ -1,0 +1,478 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>DVBViewer</title>
+</head>
+<body>
+    <div id="DVBViewerConfigurationPage" data-role="page" class="page type-interior pluginConfigurationPage DVBViewerConfigurationPage">
+
+        <div data-role="content">
+            <div class="content-primary">
+                <form id="DVBViewerConfigurationForm">
+                    
+                    <div id="connectionSection" data-role="collapsible" data-collapsed="false">
+                        <h2 id="connectionHeader">DVBViewer Recording Service Connection and Authentication</h2>
+                        <div>
+                            <ul id="connectionDetails" data-role="listview" class="ulForm">
+                                <li>
+                                    <label for="txtApiHostName">Host Name:</label>
+                                    <input id="txtApiHostName" name="txtApiHostName" />
+                                    <div class="fieldDescription">
+                                        The host name (address) of the DVBViewer Recording Service
+                                    </div>
+                                </li>
+                                <li>
+                                    <label for="txtApiPortNumber">Port Number:</label>
+                                    <input id="txtApiPortNumber" name="txtApiPortNumber" />
+                                    <div class="fieldDescription">
+                                        The port number of the DVBViewer Recording Service
+                                    </div>
+                                </li>
+                                <li>
+                                    <label for="chkRequiresAuthentication">Requires authentication (Disabled is recommended!)</label>
+                                    <input type="checkbox" id="chkRequiresAuthentication" data-mini="true" />
+                                </li>
+                                <li id="txtUserNameField">
+                                    <!--<div id="txtUserNameField" style="display:none">-->
+                                    <label for="txtUserName">UserName:</label>
+                                    <input id="txtUserName" name="txtUserName" />
+                                    <div class="fieldDescription">
+                                        The username specified in DVBViewer Recording Service - Authentication
+                                    </div>
+                                    <!--</div>-->
+                                </li>
+                                <li id="txtUserPasswordField">
+                                    <!--<div id="txtUserPasswordField" style="display:none">-->
+                                    <label for="txtPassword">Password:</label>
+                                    <input id="txtPassword" name="txtPassword" />
+                                    <div class="fieldDescription">
+                                        The password specified in DVBViewer Recording Service - Authentication
+                                    </div>
+                                    <!--</div>-->
+                                </li>
+                                <li>
+                                    <button id="saveAndTest">Save and Test Connection</button>
+                                    <div id="connectionTestResult"></div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div data-role="collapsible">
+                        <h2>Streaming Options</h2>
+                        <div>
+                            <ul data-role="listview" class="ulForm">
+                                <li>
+                                    <label for="chkEnableDirectPlay">Enable Emby Direct Playback</label>
+                                    <input type="checkbox" id="chkEnableDirectPlay" data-mini="true" />
+                                </li>
+                                <li id="txtFFProbeAnalyzeDurationField">
+                                    <label for="txtFFProbeAnalyzeDuration">Stream probing duration (ms):</label>
+                                    <input id="txtFFProbeAnalyzeDuration" name="txtFFProbeAnalyzeDuration" />
+                                    <div id="txtFFProbeAnalyzeDurationDesc" class="fieldDescription">
+                                        Defines how long FFProbe analyzes the streams for media info before playback<br />(Needed for direct play; Increase for encrypted channels)
+                                    </div>
+                                </li>
+                                <li id="chkLimitStreamingField">
+                                    <label for="chkLimitStreaming">Force Emby Transcoding of streams greater than 720p</label>
+                                    <input type="checkbox" id="chkLimitStreaming" data-mini="true" />
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div data-role="collapsible">
+                        <h2>Channel Options</h2>
+                        <div>
+                            <ul data-role="listview" class="ulForm">
+                                <li>
+                                    <label for="selectChannelGroup">Channel Group:</label>
+                                    <select id="selectChannelGroup" data-mini="true"></select>
+                                    <div class="fieldDescription">
+                                        Select the channel group you wish to use in Emby
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div id="mappingSection" data-role="collapsible">
+                        <h2>Program Options</h2>
+                        <div>Searches program description for genre keywords and maps the show to Emby categories</div>
+                        <br />
+                        <div>
+                            <ul data-role="listview" class="ulForm">
+                                <li>
+                                    <label for="txtMovieGenre">Movie Genres:</label>
+                                    <input id="txtMovieGenre" name="txtMovieGenre" />
+                                    <div class="fieldDescription">
+                                        Example: Genre: Movie,Genre: Film,Actionthriller (Movie)
+                                    </div>
+                                </li>
+                                <li>
+                                    <label for="txtSeriesGenre">Series Genres:</label>
+                                    <input id="txtSeriesGenre" name="txtSeriesGenre" />
+                                    <div class="fieldDescription">
+                                        Example: Action Series,Drama (Series),Daily Soap<br />
+                                        Limits series recording to the defined genres. If unsure, leave it empty!
+                                    </div>
+                                </li>
+                                <li>
+                                    <label for="txtSportsGenre">Sports Genres:</label>
+                                    <input id="txtSportsGenre" name="txtSportsGenre" />
+                                    <div class="fieldDescription">
+                                        Example: Genre: Sport,Genre: Football
+                                    </div>
+                                </li>
+                                <li>
+                                    <label for="txtNewsGenre">News Genres:</label>
+                                    <input id="txtNewsGenre" name="txtNewsGenre" />
+                                    <div class="fieldDescription">
+                                        Example: News Report,Daily News
+                                    </div>
+                                </li>
+                                <li>
+                                    <label for="txtKidsGenre">Kids Genres:</label>
+                                    <input id="txtKidsGenre" name="txtKidsGenre" />
+                                    <div class="fieldDescription">
+                                        Example: Genre: Cartoon,Animation (Movie)
+                                    </div>
+                                </li>
+                                <li>
+                                    <label for="txtLiveGenre">Live Genres:</label>
+                                    <input id="txtLiveGenre" name="txtLiveGenre" />
+                                    <div class="fieldDescription">
+                                        Example: Live Gameshow,Live Sports
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div data-role="collapsible">
+                        <h2>Timer Options</h2>
+                        <div>
+                            <ul data-role="listview" class="ulForm">
+                                <li>
+                                    <label for="txtTimerPrePadding">Default pre padding of timers (Min):</label>
+                                    <input id="txtTimerPrePadding" name="txtTimerPrePadding" />
+                                </li>
+                                <li>
+                                    <label for="txtTimerPostPadding">Default post padding of timers (Min):</label>
+                                    <input id="txtTimerPostPadding" name="txtTimerPostPadding" />
+                                </li>
+                            </ul>
+                            <div>Prevent recording repeats from EPG AutoSearch by:</div>
+                            <ul data-role="listview" class="ulForm">
+                                <li>
+                                    <label for="chkCheckRecordingTitel">Recording Titel</label>
+                                    <input type="checkbox" id="chkCheckRecordingTitel" data-mini="true" />
+                                </li>
+                                <li>
+                                    <label for="chkCheckRecordingInfo">Recording Info</label>
+                                    <input type="checkbox" id="chkCheckRecordingInfo" data-mini="true" />
+                                </li>
+                                <li>
+                                    <label for="chkCheckTimerName">Timer Name</label>
+                                    <input type="checkbox" id="chkCheckTimerName" data-mini="true" />
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div data-role="collapsible">
+                        <h2>Recording Options</h2>
+                        <div>
+                            <ul data-role="listview" class="ulForm">
+                                <li>
+                                    <label for="chkEnableDirectAccess">Enable direct access of recording files</label>
+                                    <input type="checkbox" id="chkEnableDirectAccess" data-mini="true" />
+
+                                </li>
+                                <li>
+                                    <label for="chkRequiresPathSubstitution">Recording access requires pathsubstitution </label>
+                                    <input type="checkbox" id="chkRequiresPathSubstitution" data-mini="true" />
+                                </li>
+                                <li id="txtLocalFilePathField">
+                                    <label for="txtLocalFilePath">Local path:</label>
+                                    <input id="txtLocalFilePath" name="txtLocalFilePath" />
+                                    <div class="fieldDescription">
+                                        The local recording folder specified in DVBViewer Recording Service settings
+                                    </div>
+                                </li>
+                                <li id="txtRemoteFilePathField">
+                                    <label for="txtRemoteFilePath">Remote share:</label>
+                                    <input id="txtRemoteFilePath" name="txtRemoteFilePath" />
+                                    <div class="fieldDescription">
+                                        The remote recording share to access DVBViewer recordings
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div data-role="collapsible">
+                        <h2>Advanced Options</h2>
+                        <div>
+                            <ul data-role="listview" class="ulForm">
+                                <li>
+                                    <label for="chkEnableTimerCache">Enable caching of timers (60s)</label>
+                                    <input type="checkbox" id="chkEnableTimerCache" data-mini="true" />
+                                </li>
+                                <li>
+                                    <label for="chkEnableLogging">Enable Logging</label>
+                                    <input type="checkbox" id="chkEnableLogging" data-mini="true" />
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <ul class="ulForm" data-role="listview">
+                        <li>
+                            <button type="submit" data-theme="b">Save</button>
+                            <button type="button" onclick="history.back();">Cancel</button>
+                        </li>
+                    </ul>
+
+                </form>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+
+            $("#chkRequiresAuthentication").click(function () {
+                checkRequiresAuthentication();
+            });
+
+            function checkRequiresAuthentication() {
+                if ($("#chkRequiresAuthentication").prop('checked')) {
+                    $("#txtUserNameField").show();
+                    $("#txtUserPasswordField").show();
+                } else {
+                    $("#txtUserNameField").hide();
+                    $("#txtUserPasswordField").hide();
+                };
+            };
+
+            $("#chkEnableDirectPlay").click(function () {
+                checkEnableDirectPlay();
+            });
+
+            function checkEnableDirectPlay() {
+                if ($("#chkEnableDirectPlay").prop('checked')) {
+                    $("#txtFFProbeAnalyzeDurationField").show();
+                    $("#chkLimitStreamingField").show();
+                } else {
+                    $("#txtFFProbeAnalyzeDurationField").hide();
+                    $("#chkLimitStreamingField").hide();
+                };
+            };
+
+            $("#chkRequiresPathSubstitution").click(function () {
+                checkRequiresPathSubstitution();
+            });
+
+            function checkRequiresPathSubstitution() {
+                if ($("#chkRequiresPathSubstitution").prop('checked')) {
+                    $("#txtLocalFilePathField").show();
+                    $("#txtRemoteFilePathField").show();
+                } else {
+                    $("#txtLocalFilePathField").hide();
+                    $("#txtRemoteFilePathField").hide();
+                };
+            };
+
+            $("#connectionTestResult").hide();
+
+            var DVBViewerConfigurationPage = {
+                pluginUniqueId: "a697f993-d2de-45dc-b7ea-687363f7903e",
+
+                selectDirectory: function () {
+
+                    Dashboard.selectDirectory({
+                        callback: function (path) {
+
+                            if (path) {
+                                $('#txtDownloadPath', $.mobile.activePage).val(path);
+                            }
+                            $('#popupDirectoryPicker', $.mobile.activePage).popup("close");
+                        },
+
+                        header: "Select Path"
+                    });
+
+                }
+            };
+
+            $('.DVBViewerConfigurationPage').on('pageshow', function (event) {
+
+                Dashboard.showLoadingMsg();
+
+                var page = this;
+
+                ApiClient.getPluginConfiguration(DVBViewerConfigurationPage.pluginUniqueId).then(function (config) {
+
+                    $('#txtApiHostName', page).val(config.ApiHostName);
+                    $('#txtApiPortNumber', page).val(config.ApiPortNumber);
+                    $('#chkRequiresAuthentication', page).checked(config.RequiresAuthentication || false).checkboxradio("refresh");
+                    $('#txtUserName', page).val(config.UserName);
+                    $('#txtPassword', page).val(config.Password);
+                    $('#txtFFProbeAnalyzeDuration', page).val(config.FFProbeAnalyzeDuration);
+                    $('#chkEnableDirectPlay', page).checked(config.EnableDirectPlay || false).checkboxradio("refresh");
+                    $('#chkLimitStreaming', page).checked(config.LimitStreaming || false).checkboxradio("refresh");
+                    $('#txtTimerPrePadding', page).val(config.TimerPrePadding);
+                    $('#txtTimerPostPadding', page).val(config.TimerPostPadding);
+                    $('#chkCheckRecordingTitel', page).checked(config.CheckRecordingTitel || false).checkboxradio("refresh");
+                    $('#chkCheckRecordingInfo', page).checked(config.CheckRecordingInfo || false).checkboxradio("refresh");
+                    $('#chkCheckTimerName', page).checked(config.CheckTimerName || false).checkboxradio("refresh");
+                    $('#chkEnableDirectAccess', page).checked(config.EnableDirectAccess || false).checkboxradio("refresh");
+                    $('#chkRequiresPathSubstitution', page).checked(config.RequiresPathSubstitution || false).checkboxradio("refresh");
+                    $('#txtLocalFilePath', page).val(config.LocalFilePath);
+                    $('#txtRemoteFilePath', page).val(config.RemoteFilePath);
+                    $('#chkEnableTimerCache', page).checked(config.EnableTimerCache || false).checkboxradio("refresh");
+                    $('#chkEnableLogging', page).checked(config.EnableLogging || false).checkboxradio("refresh");
+
+                    checkRequiresAuthentication()
+                    checkEnableDirectPlay()
+                    checkRequiresPathSubstitution();
+                    loadSelects(config, page);
+                    loadGenres(config, page);
+
+                    // var isValidConnection = TestConnection();
+
+                    // Collapse the connection section based on it being valid or not
+                    // $('#connectionSection').data('collapsed', isValidConnection);
+                    $('#connectionSection').data('collapsed', true);
+
+                    Dashboard.hideLoadingMsg();
+                });
+            });
+
+            $("#saveAndTest").click(function () {
+                saveAndTestConfiguration($('.DVBViewerConfigurationPage'));
+            });
+
+            function loadSelects(config, page) {
+                $.ajax({
+                    type: "GET",
+                    url: ApiClient.getUrl("DVBViewerPlugin/ChannelGroups"),
+                    dataType: "json"
+                }).then(function (groups) {
+                    $('#selectChannelGroup', page).html(groups.map(function (group) {
+                        var selectedText = group == config.DefaultChannelGroup ? " selected" : "";
+                        return '<option value="' + group + '"' + selectedText + '>' + group + '</option>';
+                    })).selectmenu('refresh').trigger('change');
+                });
+            }
+
+            function loadGenres(config, page) {
+
+                if (config != null && config.GenreMappings) {
+
+                    if (config.GenreMappings["GENREMOVIE"] != null) {
+                        $('#txtMovieGenre', page).val(config.GenreMappings["GENREMOVIE"].join(','));
+                    }
+
+                    if (config.GenreMappings["GENRESERIES"] != null) {
+                        $('#txtSeriesGenre', page).val(config.GenreMappings["GENRESERIES"].join(','));
+                    }
+
+                    if (config.GenreMappings["GENRESPORT"] != null) {
+                        $('#txtSportsGenre', page).val(config.GenreMappings["GENRESPORT"].join(','));
+                    }
+
+                    if (config.GenreMappings["GENRENEWS"] != null) {
+                        $('#txtNewsGenre', page).val(config.GenreMappings["GENRENEWS"].join(','));
+                    }
+
+                    if (config.GenreMappings["GENREKIDS"] != null) {
+                        $('#txtKidsGenre', page).val(config.GenreMappings["GENREKIDS"].join(','));
+                    }
+
+                    if (config.GenreMappings["GENRELIVE"] != null) {
+                        $('#txtLiveGenre', page).val(config.GenreMappings["GENRELIVE"].join(','));
+                    }
+                }
+            }
+
+            $('.DVBViewerConfigurationPage').on('submit', function (e) {
+
+                saveConfiguration(this);
+
+                return false; // Disable default form submission
+            });
+
+            function saveAndTestConfiguration(form) {
+                saveConfiguration(form, function () { TestConnection(); });
+            }
+
+            function saveConfiguration(form, callback) {
+                Dashboard.showLoadingMsg();
+
+                ApiClient.getPluginConfiguration(DVBViewerConfigurationPage.pluginUniqueId).then(function (config) {
+
+                    config.ApiHostName = $('#txtApiHostName', form).val();
+                    config.ApiPortNumber = $('#txtApiPortNumber', form).val();
+                    config.RequiresAuthentication = $('#chkRequiresAuthentication', form).checked();
+                    config.UserName = $('#txtUserName', form).val();
+                    config.Password = $('#txtPassword', form).val();
+                    config.FFProbeAnalyzeDuration = $('#txtFFProbeAnalyzeDuration', form).val();
+                    config.EnableDirectPlay = $('#chkEnableDirectPlay', form).checked();
+                    config.LimitStreaming = $('#chkLimitStreaming', form).checked();
+                    config.TimerPrePadding = $('#txtTimerPrePadding', form).val();
+                    config.TimerPostPadding = $('#txtTimerPostPadding', form).val();
+                    config.CheckRecordingTitel = $('#chkCheckRecordingTitel', form).checked();
+                    config.CheckRecordingInfo = $('#chkCheckRecordingInfo', form).checked();
+                    config.CheckTimerName = $('#chkCheckTimerName', form).checked();
+                    config.EnableDirectAccess = $('#chkEnableDirectAccess', form).checked();
+                    config.RequiresPathSubstitution = $('#chkRequiresPathSubstitution', form).checked();
+                    config.LocalFilePath = $('#txtLocalFilePath', form).val();
+                    config.RemoteFilePath = $('#txtRemoteFilePath', form).val();
+                    config.DefaultChannelGroup = $('#selectChannelGroup', form).val();
+                    config.EnableTimerCache = $('#chkEnableTimerCache', form).checked();
+                    config.EnableLogging = $('#chkEnableLogging', form).checked();
+
+                    // Copy over the genre mapping fields
+                    config.GenreMappings = {
+                        "GENREMOVIE": $('#txtMovieGenre', form).val().split(","),
+                        "GENRESERIES": $('#txtSeriesGenre', form).val().split(","),
+                        "GENRESPORT": $('#txtSportsGenre', form).val().split(","),
+                        "GENRENEWS": $('#txtNewsGenre', form).val().split(","),
+                        "GENREKIDS": $('#txtKidsGenre', form).val().split(","),
+                        "GENRELIVE": $('#txtLiveGenre', form).val().split(","),
+                    }
+
+                    ApiClient.updatePluginConfiguration(DVBViewerConfigurationPage.pluginUniqueId, config).then(function () {
+
+                        // Reload the selects - this may be called by the 'test' button
+                        loadSelects(config, form);
+
+                        if (callback != null) { callback(); }
+
+                        Dashboard.processPluginConfigurationUpdateResult();
+                    });
+
+                });
+
+                Dashboard.hideLoadingMsg();
+            }
+
+            function TestConnection() {
+                fetch(ApiClient.getUrl("DVBViewerPlugin/TestConnection"), {
+                    method: "GET",
+                }).then(function (response) {
+                    if (response.ok === true) {
+                        $("#connectionTestResult").text("Successfully connected");
+                        $("#connectionTestResult").css({ 'color': 'green' });
+                    } else {
+                        $("#connectionTestResult").text("Unable to connect to RS, please review your connection settings before continuing");
+                        $("#connectionTestResult").css({ 'color': 'red' });
+                    };
+                    $("#connectionTestResult").show();
+                });     
+            }
+        </script>
+    </div>
+
+</body>
+</html>
