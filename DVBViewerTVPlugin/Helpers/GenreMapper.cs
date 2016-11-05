@@ -108,12 +108,12 @@ namespace MediaBrowser.Plugins.DVBViewer.Helpers
                     program.Genres.Add(_seriesGenres.FirstOrDefault(g => program.Overview.IndexOf(g, StringComparison.InvariantCultureIgnoreCase) != -1));
                     program.IsSeries = _seriesGenres.Any(g => program.Overview.IndexOf(g, StringComparison.InvariantCultureIgnoreCase) != -1);
                 }
-                else
-                {
-                    program.IsSeries = true;
-                    program.IsPremiere = false;
-                    program.IsRepeat = true;
-                }
+                //else
+                //{
+                //    program.IsSeries = true;
+                //    program.IsPremiere = false;
+                //    program.IsRepeat = true;
+                //}
 
                 if (_sportGenres.All(g => !string.IsNullOrWhiteSpace(g)))
                 {
@@ -139,13 +139,12 @@ namespace MediaBrowser.Plugins.DVBViewer.Helpers
                     program.IsLive = _liveGenres.Any(g => program.Overview.IndexOf(g, StringComparison.InvariantCultureIgnoreCase) != -1);
                 }
 
-            }
-
-            if (program != null && program.Overview == null)
-            {
-                program.IsSeries = true;
-                program.IsPremiere = false;
-                program.IsRepeat = true;
+                if (!program.IsMovie && !program.IsSeries && !program.IsSports && !program.IsNews && !program.IsKids && !program.IsLive)
+                {
+                    program.IsSeries = true;
+                    program.IsPremiere = false;
+                    program.IsRepeat = true;
+                }
             }
         }
     }

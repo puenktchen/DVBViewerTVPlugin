@@ -178,11 +178,9 @@
 
             function checkRequiresAuthentication() {
                 if ($("#chkRequiresAuthentication").prop('checked')) {
-                    $("#txtUserNameField").show();
-                    $("#txtUserPasswordField").show();
+                    $("#txtAuthenticationFields").show();
                 } else {
-                    $("#txtUserNameField").hide();
-                    $("#txtUserPasswordField").hide();
+                    $("#txtAuthenticationFields").hide();
                 };
             };
 
@@ -192,11 +190,9 @@
 
             function checkRequiresPathSubstitution() {
                 if ($("#chkRequiresPathSubstitution").prop('checked')) {
-                    $("#txtLocalFilePathField").show();
-                    $("#txtRemoteFilePathField").show();
+                    $("#txtPathsubstitutionFields").show();
                 } else {
-                    $("#txtLocalFilePathField").hide();
-                    $("#txtRemoteFilePathField").hide();
+                    $("#txtPathsubstitutionFields").hide();
                 };
             };
 

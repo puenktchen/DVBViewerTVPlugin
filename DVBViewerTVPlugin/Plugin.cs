@@ -1,4 +1,6 @@
-﻿using MediaBrowser.Common.Configuration;
+﻿using System.Collections.Generic;
+
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.Entities;
@@ -15,7 +17,7 @@ namespace MediaBrowser.Plugins.DVBViewer
     /// <summary>
     /// Class Plugin
     /// </summary>
-    public class Plugin : BasePlugin<PluginConfiguration>
+    public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
     {
         public static TVServiceProxy TvProxy { get; private set; }
         public static StreamingServiceProxy StreamingProxy { get; private set; }
@@ -89,5 +91,16 @@ namespace MediaBrowser.Plugins.DVBViewer
             ServerEntryPoint.Instance.OnConfigurationUpdated(oldConfig, (PluginConfiguration)configuration);
         }
 
+        public IEnumerable<PluginPageInfo> GetPages()
+        {
+            return new[]
+            {
+                new PluginPageInfo
+                {
+                    Name = "DVBViewer",
+                    EmbeddedResourcePath = "MediaBrowser.Plugins.DVBViewer.Configuration.configPage.html"
+                }
+            };
+        }
     }
 }

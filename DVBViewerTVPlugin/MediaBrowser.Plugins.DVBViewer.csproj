@@ -40,10 +40,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>bin\Release\MediaBrowser.Controller.dll</HintPath>
     </Reference>
-    <Reference Include="MediaBrowser.MediaEncoding, Version=3.0.8400.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>bin\Release\MediaBrowser.MediaEncoding.dll</HintPath>
-    </Reference>
     <Reference Include="MediaBrowser.Model, Version=3.0.8400.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>bin\Release\MediaBrowser.Model.dll</HintPath>
@@ -51,10 +47,6 @@
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="ServiceStack.Interfaces, Version=4.0.0.0, Culture=neutral, PublicKeyToken=e06fbc6124f57c43, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Emby-dev\MediaBrowser.Controller\bin\Debug\ServiceStack.Interfaces.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -76,7 +68,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configuration\PluginConfiguration.cs" />
-    <Compile Include="Configuration\DVBViewerConfigurationPage.cs" />
     <Compile Include="Entities\ScheduleDefaults.cs" />
     <Compile Include="Entities\SerializableDictionary.cs" />
     <Compile Include="Helpers\ExceptionHelper.cs" />

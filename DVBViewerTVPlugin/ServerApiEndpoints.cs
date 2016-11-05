@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 
-using ServiceStack;
-
-using MediaBrowser.Controller.Net;
+using MediaBrowser.Model.Services;
 using MediaBrowser.Plugins.DVBViewer.Services.Exceptions;
 
 namespace MediaBrowser.Plugins.DVBViewer
@@ -19,7 +17,7 @@ namespace MediaBrowser.Plugins.DVBViewer
     {
     }
 
-    public class ServerApiEndpoints : IRestfulService
+    public class ServerApiEndpoints : IService
     {
         public object Get(GetChannelGroups request)
         {
