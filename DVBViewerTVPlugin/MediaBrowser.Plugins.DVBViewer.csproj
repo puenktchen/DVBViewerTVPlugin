@@ -77,14 +77,10 @@
   <ItemGroup>
     <Compile Include="Configuration\PluginConfiguration.cs" />
     <Compile Include="Configuration\DVBViewerConfigurationPage.cs" />
-    <Compile Include="Entities\ChannelSorting.cs" />
-    <Compile Include="Entities\ChannelSortOption.cs" />
     <Compile Include="Entities\ScheduleDefaults.cs" />
     <Compile Include="Entities\SerializableDictionary.cs" />
-    <Compile Include="Helpers\FFProbeHelper.cs" />
     <Compile Include="Helpers\ExceptionHelper.cs" />
     <Compile Include="Helpers\GenreMapper.cs" />
-    <Compile Include="Services\Entities\FFProbeMediaInfo.cs" />
     <Compile Include="Services\Entities\Searches.cs" />
     <Compile Include="Services\Entities\ChannelGroups.cs" />
     <Compile Include="Helpers\GeneralExtensions.cs" />

@@ -4,235 +4,167 @@
     <title>DVBViewer</title>
 </head>
 <body>
-    <div id="DVBViewerConfigurationPage" data-role="page" class="page type-interior pluginConfigurationPage DVBViewerConfigurationPage">
-
+    <div id="DVBViewerConfigurationPage" data-role="page" class="page type-interior pluginConfigurationPage DVBViewerConfigurationPage" data-require="emby-button,emby-input,emby-select,emby-checkbox,emby-collapse">
         <div data-role="content">
             <div class="content-primary">
                 <form id="DVBViewerConfigurationForm">
-                    
-                    <div id="connectionSection" data-role="collapsible" data-collapsed="false">
-                        <h2 id="connectionHeader">DVBViewer Recording Service Connection and Authentication</h2>
-                        <div>
-                            <ul id="connectionDetails" data-role="listview" class="ulForm">
-                                <li>
-                                    <label for="txtApiHostName">Host Name:</label>
-                                    <input id="txtApiHostName" name="txtApiHostName" />
-                                    <div class="fieldDescription">
-                                        The host name (address) of the DVBViewer Recording Service
-                                    </div>
-                                </li>
-                                <li>
-                                    <label for="txtApiPortNumber">Port Number:</label>
-                                    <input id="txtApiPortNumber" name="txtApiPortNumber" />
-                                    <div class="fieldDescription">
-                                        The port number of the DVBViewer Recording Service
-                                    </div>
-                                </li>
-                                <li>
-                                    <label for="chkRequiresAuthentication">Requires authentication (Disabled is recommended!)</label>
-                                    <input type="checkbox" id="chkRequiresAuthentication" data-mini="true" />
-                                </li>
-                                <li id="txtUserNameField">
-                                    <!--<div id="txtUserNameField" style="display:none">-->
-                                    <label for="txtUserName">UserName:</label>
-                                    <input id="txtUserName" name="txtUserName" />
-                                    <div class="fieldDescription">
-                                        The username specified in DVBViewer Recording Service - Authentication
-                                    </div>
-                                    <!--</div>-->
-                                </li>
-                                <li id="txtUserPasswordField">
-                                    <!--<div id="txtUserPasswordField" style="display:none">-->
-                                    <label for="txtPassword">Password:</label>
-                                    <input id="txtPassword" name="txtPassword" />
-                                    <div class="fieldDescription">
-                                        The password specified in DVBViewer Recording Service - Authentication
-                                    </div>
-                                    <!--</div>-->
-                                </li>
-                                <li>
-                                    <button id="saveAndTest">Save and Test Connection</button>
-                                    <div id="connectionTestResult"></div>
-                                </li>
-                            </ul>
+
+                    <h1 id="connectionHeader">DVBViewer Recording Service Connection and Authentication</h1>
+                    <div class="inputContainer">
+                        <input is="emby-input" id="txtApiHostName" name="txtApiHostName" label="Host name:" />
+                        <div class="fieldDescription">
+                            The host name (address) of the DVBViewer Recording Service
+                        </div>
+                    </div>
+                    <div class="inputContainer">
+                        <input is="emby-input" id="txtApiPortNumber" name="txtApiPortNumber" label="Port number:" />
+                        <div class="fieldDescription">
+                            The port number of the DVBViewer Recording Service
+                        </div>
+                    </div>
+                    <label class="checkboxContainer">
+                        <input is="emby-checkbox" type="checkbox" id="chkRequiresAuthentication" />
+                        <span>Requires authentication ("Disabled" is recommended)</span>
+                    </label>
+                    <div id="txtAuthenticationFields">
+                        <div class="inputContainer">
+                            <input is="emby-input" id="txtUserName" name="txtUserName" label="User name:" />
+                            <div class="fieldDescription">
+                                The username specified in DVBViewer Recording Service - Authentication
+                            </div>
+                        </div>
+                        <div class="inputContainer">
+                            <input is="emby-input" id="txtPassword" name="txtPassword" label="Password:" />
+                            <div class="fieldDescription">
+                                The password specified in DVBViewer Recording Service - Authentication
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <button is="emby-button" type="button" id="saveAndTest" class="raised button-cancel block"><span>Save Connection Settings</span></button>
+                        <p id="connectionTestResult"></p>
+                    </div>
+                    <br />
+
+                    <div is="emby-collapse" title="Channel Options">
+                        <div class="collapseContent">
+                            <div class="selectContainer">
+                                <select is="emby-select" id="selectChannelGroup" data-mini="true" label="Channel group:"></select>
+                                <div class="fieldDescription">
+                                    Select the channel group you wish to use in Emby
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <div data-role="collapsible">
-                        <h2>Streaming Options</h2>
-                        <div>
-                            <ul data-role="listview" class="ulForm">
-                                <li>
-                                    <label for="chkEnableDirectPlay">Enable Emby Direct Playback</label>
-                                    <input type="checkbox" id="chkEnableDirectPlay" data-mini="true" />
-                                </li>
-                                <li id="txtFFProbeAnalyzeDurationField">
-                                    <label for="txtFFProbeAnalyzeDuration">Stream probing duration (ms):</label>
-                                    <input id="txtFFProbeAnalyzeDuration" name="txtFFProbeAnalyzeDuration" />
-                                    <div id="txtFFProbeAnalyzeDurationDesc" class="fieldDescription">
-                                        Defines how long FFProbe analyzes the streams for media info before playback<br />(Needed for direct play; Increase for encrypted channels)
-                                    </div>
-                                </li>
-                                <li id="chkLimitStreamingField">
-                                    <label for="chkLimitStreaming">Force Emby Transcoding of streams greater than 720p</label>
-                                    <input type="checkbox" id="chkLimitStreaming" data-mini="true" />
-                                </li>
-                            </ul>
+                    <div is="emby-collapse" title="Program Options">
+                        <div class="collapseContent">
+                            <p>Searches program description for genre keywords and maps the show to Emby categories</p>
+                            <div class="inputContainer">
+                                <input is="emby-input" id="txtMovieGenre" name="txtMovieGenre" label="Movie genres:" />
+                                <div class="fieldDescription">
+                                    Example: Movie,Film,TvMovie
+                                </div>
+                            </div>
+                            <div class="inputContainer">
+                                <input is="emby-input" id="txtSeriesGenre" name="txtSeriesGenre" label="Series genres:" />
+                                <div class="fieldDescription">
+                                    Example: Action Series,Drama (Series),Daily Soap (limits series recordings to these genres. If unsure, leave empty.)
+                                </div>
+                            </div>
+                            <div class="inputContainer">
+                                <input is="emby-input" id="txtSportsGenre" name="txtSportsGenre" label="Sports genres:" />
+                                <div class="fieldDescription">
+                                    Example: Sport,Football
+                                </div>
+                            </div>
+                            <div class="inputContainer">
+                                <input is="emby-input" id="txtNewsGenre" name="txtNewsGenre" label="News genres:" />
+                                <div class="fieldDescription">
+                                    Example: News Report,Daily News
+                                </div>
+                            </div>
+                            <div class="inputContainer">
+                                <input is="emby-input" id="txtKidsGenre" name="txtKidsGenre" label="Kids genres:" />
+                                <div class="fieldDescription">
+                                    Example: Cartoon,Animation
+                                </div>
+                            </div>
+                            <div class="inputContainer">
+                                <input is="emby-input" id="txtLiveGenre" name="txtLiveGenre" label="Live genres:" />
+                                <div class="fieldDescription">
+                                    Example: Live Gameshow,Live Sports
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <div data-role="collapsible">
-                        <h2>Channel Options</h2>
-                        <div>
-                            <ul data-role="listview" class="ulForm">
-                                <li>
-                                    <label for="selectChannelGroup">Channel Group:</label>
-                                    <select id="selectChannelGroup" data-mini="true"></select>
-                                    <div class="fieldDescription">
-                                        Select the channel group you wish to use in Emby
-                                    </div>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div id="mappingSection" data-role="collapsible">
-                        <h2>Program Options</h2>
-                        <div>Searches program description for genre keywords and maps the show to Emby categories</div>
-                        <br />
-                        <div>
-                            <ul data-role="listview" class="ulForm">
-                                <li>
-                                    <label for="txtMovieGenre">Movie Genres:</label>
-                                    <input id="txtMovieGenre" name="txtMovieGenre" />
-                                    <div class="fieldDescription">
-                                        Example: Genre: Movie,Genre: Film,Actionthriller (Movie)
-                                    </div>
-                                </li>
-                                <li>
-                                    <label for="txtSeriesGenre">Series Genres:</label>
-                                    <input id="txtSeriesGenre" name="txtSeriesGenre" />
-                                    <div class="fieldDescription">
-                                        Example: Action Series,Drama (Series),Daily Soap<br />
-                                        Limits series recording to the defined genres. If unsure, leave it empty!
-                                    </div>
-                                </li>
-                                <li>
-                                    <label for="txtSportsGenre">Sports Genres:</label>
-                                    <input id="txtSportsGenre" name="txtSportsGenre" />
-                                    <div class="fieldDescription">
-                                        Example: Genre: Sport,Genre: Football
-                                    </div>
-                                </li>
-                                <li>
-                                    <label for="txtNewsGenre">News Genres:</label>
-                                    <input id="txtNewsGenre" name="txtNewsGenre" />
-                                    <div class="fieldDescription">
-                                        Example: News Report,Daily News
-                                    </div>
-                                </li>
-                                <li>
-                                    <label for="txtKidsGenre">Kids Genres:</label>
-                                    <input id="txtKidsGenre" name="txtKidsGenre" />
-                                    <div class="fieldDescription">
-                                        Example: Genre: Cartoon,Animation (Movie)
-                                    </div>
-                                </li>
-                                <li>
-                                    <label for="txtLiveGenre">Live Genres:</label>
-                                    <input id="txtLiveGenre" name="txtLiveGenre" />
-                                    <div class="fieldDescription">
-                                        Example: Live Gameshow,Live Sports
-                                    </div>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div data-role="collapsible">
-                        <h2>Timer Options</h2>
-                        <div>
-                            <ul data-role="listview" class="ulForm">
-                                <li>
-                                    <label for="txtTimerPrePadding">Default pre padding of timers (Min):</label>
-                                    <input id="txtTimerPrePadding" name="txtTimerPrePadding" />
-                                </li>
-                                <li>
-                                    <label for="txtTimerPostPadding">Default post padding of timers (Min):</label>
-                                    <input id="txtTimerPostPadding" name="txtTimerPostPadding" />
-                                </li>
-                            </ul>
+                    <div is="emby-collapse" title="Timer Options">
+                        <div class="collapseContent">
+                            <div class="inputContainer">
+                                <input is="emby-input" id="txtTimerPrePadding" name="txtTimerPrePadding" label="Default pre padding of timers (Min):" />
+                                <input is="emby-input" id="txtTimerPostPadding" name="txtTimerPostPadding" label="Default post padding of timers (Min):" />
+                            </div>
                             <div>Prevent recording repeats from EPG AutoSearch by:</div>
-                            <ul data-role="listview" class="ulForm">
-                                <li>
-                                    <label for="chkCheckRecordingTitel">Recording Titel</label>
-                                    <input type="checkbox" id="chkCheckRecordingTitel" data-mini="true" />
-                                </li>
-                                <li>
-                                    <label for="chkCheckRecordingInfo">Recording Info</label>
-                                    <input type="checkbox" id="chkCheckRecordingInfo" data-mini="true" />
-                                </li>
-                                <li>
-                                    <label for="chkCheckTimerName">Timer Name</label>
-                                    <input type="checkbox" id="chkCheckTimerName" data-mini="true" />
-                                </li>
-                            </ul>
+                            <label class="checkboxContainer">
+                                <input is="emby-checkbox" type="checkbox" id="chkCheckRecordingTitel" />
+                                <span>Recording Titel</span>
+                            </label>
+                            <label class="checkboxContainer">
+                                <input is="emby-checkbox" type="checkbox" id="chkCheckRecordingInfo" />
+                                <span>Recording Info</span>
+                            </label>
+                            <label class="checkboxContainer">
+                                <input is="emby-checkbox" type="checkbox" id="chkCheckTimerName" />
+                                <span>Timer Name</span>
+                            </label>
                         </div>
                     </div>
 
-                    <div data-role="collapsible">
-                        <h2>Recording Options</h2>
-                        <div>
-                            <ul data-role="listview" class="ulForm">
-                                <li>
-                                    <label for="chkEnableDirectAccess">Enable direct access of recording files</label>
-                                    <input type="checkbox" id="chkEnableDirectAccess" data-mini="true" />
-
-                                </li>
-                                <li>
-                                    <label for="chkRequiresPathSubstitution">Recording access requires pathsubstitution </label>
-                                    <input type="checkbox" id="chkRequiresPathSubstitution" data-mini="true" />
-                                </li>
-                                <li id="txtLocalFilePathField">
-                                    <label for="txtLocalFilePath">Local path:</label>
-                                    <input id="txtLocalFilePath" name="txtLocalFilePath" />
+                    <div is="emby-collapse" title="Recording Options">
+                        <div class="collapseContent">
+                            <label class="checkboxContainer">
+                                <input is="emby-checkbox" type="checkbox" id="chkEnableDirectAccess" />
+                                <span>Enable direct access of recording files</span>
+                            </label>
+                            <label class="checkboxContainer">
+                                <input is="emby-checkbox" type="checkbox" id="chkRequiresPathSubstitution" />
+                                <span>Direct access of recording files requires pathsubstitution</span>
+                            </label>
+                            <div id="txtPathsubstitutionFields">
+                                <div class="inputContainer">
+                                    <input is="emby-input" id="txtLocalFilePath" name="txtLocalFilePath" label="Local path:" />
                                     <div class="fieldDescription">
                                         The local recording folder specified in DVBViewer Recording Service settings
                                     </div>
-                                </li>
-                                <li id="txtRemoteFilePathField">
-                                    <label for="txtRemoteFilePath">Remote share:</label>
-                                    <input id="txtRemoteFilePath" name="txtRemoteFilePath" />
+                                </div>
+                                <div class="inputContainer">
+                                    <input is="emby-input" id="txtRemoteFilePath" name="txtRemoteFilePath" label="Remote share:" />
                                     <div class="fieldDescription">
                                         The remote recording share to access DVBViewer recordings
                                     </div>
-                                </li>
-                            </ul>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <div data-role="collapsible">
-                        <h2>Advanced Options</h2>
-                        <div>
-                            <ul data-role="listview" class="ulForm">
-                                <li>
-                                    <label for="chkEnableTimerCache">Enable caching of timers (60s)</label>
-                                    <input type="checkbox" id="chkEnableTimerCache" data-mini="true" />
-                                </li>
-                                <li>
-                                    <label for="chkEnableLogging">Enable Logging</label>
-                                    <input type="checkbox" id="chkEnableLogging" data-mini="true" />
-                                </li>
-                            </ul>
+                    <div is="emby-collapse" title="Advanced Options">
+                        <div class="collapseContent">
+                            <label class="checkboxContainer">
+                                <input is="emby-checkbox" type="checkbox" id="chkEnableTimerCache" />
+                                <span>Enable caching of timers</span>
+                            </label>
+                            <label class="checkboxContainer">
+                                <input is="emby-checkbox" type="checkbox" id="chkEnableLogging" />
+                                <span>Enable Logging</span>
+                            </label>
                         </div>
                     </div>
 
-                    <ul class="ulForm" data-role="listview">
-                        <li>
-                            <button type="submit" data-theme="b">Save</button>
-                            <button type="button" onclick="history.back();">Cancel</button>
-                        </li>
-                    </ul>
+                    <br />
+                    <div>
+                        <button is="emby-button" type="submit" class="raised button-submit block"><span>Save</span></button>
+                    </div>
 
                 </form>
             </div>
@@ -254,20 +186,6 @@
                 };
             };
 
-            $("#chkEnableDirectPlay").click(function () {
-                checkEnableDirectPlay();
-            });
-
-            function checkEnableDirectPlay() {
-                if ($("#chkEnableDirectPlay").prop('checked')) {
-                    $("#txtFFProbeAnalyzeDurationField").show();
-                    $("#chkLimitStreamingField").show();
-                } else {
-                    $("#txtFFProbeAnalyzeDurationField").hide();
-                    $("#chkLimitStreamingField").hide();
-                };
-            };
-
             $("#chkRequiresPathSubstitution").click(function () {
                 checkRequiresPathSubstitution();
             });
@@ -285,30 +203,31 @@
             $("#connectionTestResult").hide();
 
             var DVBViewerConfigurationPage = {
-                pluginUniqueId: "a697f993-d2de-45dc-b7ea-687363f7903e",
-
-                selectDirectory: function () {
-
-                    Dashboard.selectDirectory({
-                        callback: function (path) {
-
-                            if (path) {
-                                $('#txtDownloadPath', $.mobile.activePage).val(path);
-                            }
-                            $('#popupDirectoryPicker', $.mobile.activePage).popup("close");
-                        },
-
-                        header: "Select Path"
-                    });
-
-                }
+                pluginUniqueId: "a697f993-d2de-45dc-b7ea-687363f7903e"
             };
 
-            $('.DVBViewerConfigurationPage').on('pageshow', function (event) {
-
-                Dashboard.showLoadingMsg();
+            $('.DVBViewerConfigurationPage').on('pageinit', function (event) {
 
                 var page = this;
+
+                $("#saveAndTest", page).click(function () {
+                    saveAndTestConfiguration($('.DVBViewerConfigurationPage'));
+                });
+
+                $('form', page).on('submit', function (e) {
+
+                    saveConfiguration(this);
+
+                    return false; // Disable default form submission
+                });
+
+            }).on('pageshow', function (event) {
+
+                var page = this;
+
+                $("#connectionTestResult", page).hide();
+
+                Dashboard.showLoadingMsg();
 
                 ApiClient.getPluginConfiguration(DVBViewerConfigurationPage.pluginUniqueId).then(function (config) {
 
@@ -317,9 +236,6 @@
                     $('#chkRequiresAuthentication', page).checked(config.RequiresAuthentication || false).checkboxradio("refresh");
                     $('#txtUserName', page).val(config.UserName);
                     $('#txtPassword', page).val(config.Password);
-                    $('#txtFFProbeAnalyzeDuration', page).val(config.FFProbeAnalyzeDuration);
-                    $('#chkEnableDirectPlay', page).checked(config.EnableDirectPlay || false).checkboxradio("refresh");
-                    $('#chkLimitStreaming', page).checked(config.LimitStreaming || false).checkboxradio("refresh");
                     $('#txtTimerPrePadding', page).val(config.TimerPrePadding);
                     $('#txtTimerPostPadding', page).val(config.TimerPostPadding);
                     $('#chkCheckRecordingTitel', page).checked(config.CheckRecordingTitel || false).checkboxradio("refresh");
@@ -333,16 +249,9 @@
                     $('#chkEnableLogging', page).checked(config.EnableLogging || false).checkboxradio("refresh");
 
                     checkRequiresAuthentication()
-                    checkEnableDirectPlay()
                     checkRequiresPathSubstitution();
                     loadSelects(config, page);
                     loadGenres(config, page);
-
-                    // var isValidConnection = TestConnection();
-
-                    // Collapse the connection section based on it being valid or not
-                    // $('#connectionSection').data('collapsed', isValidConnection);
-                    $('#connectionSection').data('collapsed', true);
 
                     Dashboard.hideLoadingMsg();
                 });
@@ -395,18 +304,11 @@
                 }
             }
 
-            $('.DVBViewerConfigurationPage').on('submit', function (e) {
-
-                saveConfiguration(this);
-
-                return false; // Disable default form submission
-            });
-
             function saveAndTestConfiguration(form) {
-                saveConfiguration(form, function () { TestConnection(); });
+                saveConfiguration(form);
             }
 
-            function saveConfiguration(form, callback) {
+            function saveConfiguration(form) {
                 Dashboard.showLoadingMsg();
 
                 ApiClient.getPluginConfiguration(DVBViewerConfigurationPage.pluginUniqueId).then(function (config) {
@@ -416,9 +318,6 @@
                     config.RequiresAuthentication = $('#chkRequiresAuthentication', form).checked();
                     config.UserName = $('#txtUserName', form).val();
                     config.Password = $('#txtPassword', form).val();
-                    config.FFProbeAnalyzeDuration = $('#txtFFProbeAnalyzeDuration', form).val();
-                    config.EnableDirectPlay = $('#chkEnableDirectPlay', form).checked();
-                    config.LimitStreaming = $('#chkLimitStreaming', form).checked();
                     config.TimerPrePadding = $('#txtTimerPrePadding', form).val();
                     config.TimerPostPadding = $('#txtTimerPostPadding', form).val();
                     config.CheckRecordingTitel = $('#chkCheckRecordingTitel', form).checked();
@@ -446,8 +345,6 @@
 
                         // Reload the selects - this may be called by the 'test' button
                         loadSelects(config, form);
-
-                        if (callback != null) { callback(); }
 
                         Dashboard.processPluginConfigurationUpdateResult();
                     });

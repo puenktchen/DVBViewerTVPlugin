@@ -18,13 +18,11 @@ namespace MediaBrowser.Plugins.DVBViewer.Configuration
         {
             ApiHostName = "localhost";
             ApiPortNumber = 8089;
-            FFProbeAnalyzeDuration = 1500;
             TimerPrePadding = 5;
             TimerPostPadding = 10;
             CheckRecordingTitel = true;
             CheckRecordingInfo = true;
             CheckTimerName = true;
-            EnableDirectPlay = true;
             EnableTimerCache = true;
 
             // Initialise this
@@ -55,21 +53,6 @@ namespace MediaBrowser.Plugins.DVBViewer.Configuration
         /// The password for authenticating with DVBViewer Recording Service
         /// </summary>
         public string Password { get; set; }
-
-        /// <summary>
-        /// ffprobe analyze duration in ms
-        /// </summary>
-        public Int32? FFProbeAnalyzeDuration { get; set; }
-
-        /// <summary>
-        /// Enable direct play of streams
-        /// </summary>
-        public bool EnableDirectPlay { get; set; }
-
-        /// <summary>
-        /// Limit direct play up to 720p
-        /// </summary>
-        public bool LimitStreaming { get; set; }
 
         /// <summary>
         /// The default channel group to use in MB
@@ -163,11 +146,6 @@ namespace MediaBrowser.Plugins.DVBViewer.Configuration
                 {
                     return new ValidationResult(false, "Please specify an Password (check DVBViewer Recording Service - Authentication");
                 }
-            }
-
-            if (!FFProbeAnalyzeDuration.HasValue)
-            {
-                FFProbeAnalyzeDuration = 1500;
             }
 
             if (!TimerPrePadding.HasValue)
