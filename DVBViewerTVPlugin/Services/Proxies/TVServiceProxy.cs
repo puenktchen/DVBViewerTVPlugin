@@ -118,8 +118,11 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Proxies
                     ChannelId = channels.Where(c => c.EPGID == p.Channel).Select(c => c.Nr).FirstOrDefault(),
                     StartDate = GeneralExtensions.GetProgramTime(p.Start),
                     EndDate = GeneralExtensions.GetProgramTime(p.Stop),
-                    HasImage = false,
                 };
+
+                var channel = channels.Where(c => c.EPGID == p.Channel).FirstOrDefault();
+                if (!String.IsNullOrEmpty(channel.Logo))
+                    program.ImageUrl = GeneralExtensions.ChannelImageUrl(channel.Logo);
 
                 if (!String.IsNullOrEmpty(p.GetDescription()))
                     genreMapper.PopulateProgramGenres(program);
@@ -205,7 +208,8 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Proxies
                     channels.Where(c => c.Nr == timerInfo.ChannelId).Select(c => c.EPGID).FirstOrDefault(),
                     GeneralExtensions.FloatDateTime(timerInfo.StartDate),
                     GeneralExtensions.FloatDateTime(timerInfo.EndDate));
-                var program = guide.Programs.Where(p => GeneralExtensions.GetProgramTime(p.Start) == timerInfo.StartDate.ToLocalTime()).FirstOrDefault();
+                //var program = guide.Programs.Where(p => GeneralExtensions.GetProgramTime(p.Start) == timerInfo.StartDate.ToLocalTime()).FirstOrDefault();
+                var program = guide.Programs.Where(p => GeneralExtensions.GetProgramTime(p.Start) == timerInfo.StartDate).FirstOrDefault();
 
                 if (program != null)
                 {
@@ -213,7 +217,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Proxies
                     timerInfo.Overview = program.GetDescription();
                 }
 
-                Plugin.Logger.Info("Found schedule: {0}, series: {1}, channelNr: {2}, start: {3}, end: {4}, is enabled: ", t.Description, t.Series, timerInfo.ChannelId, timerInfo.StartDate.ToLocalTime(), timerInfo.EndDate.ToLocalTime(), t.Enabled);
+                Plugin.Logger.Info("Found schedule: {0}, series: {1}, channelNr: {2}, start: {3}, end: {4}, is enabled: {5}", t.Description, t.Series, timerInfo.ChannelId, timerInfo.StartDate.ToLocalTime(), timerInfo.EndDate.ToLocalTime(), t.Enabled);
                 return timerInfo; 
             });
         }

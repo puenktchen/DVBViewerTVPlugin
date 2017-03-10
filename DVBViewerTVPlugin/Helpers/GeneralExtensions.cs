@@ -52,7 +52,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Helpers
 
         public static DateTime GetProgramTime(this String value)
         {
-            return DateTime.ParseExact(value, "yyyyMMddHHmmss", CultureInfo.InvariantCulture);
+            return DateTime.ParseExact(value, "yyyyMMddHHmmss", CultureInfo.InvariantCulture).ToUniversalTime();
         }
 
         public static DateTime GetScheduleTime(this String date, String time)
@@ -138,7 +138,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Helpers
             {
                 var videoflag = binary.ElementAt(binary.Length - 4).ToString();
                 var encrypted = binary.ElementAt(binary.Length - 1).ToString();
-                Plugin.Logger.Info("DVBViewer channel flag: {0}, binary: {1}, videoflag: {2}, encrypted: {3}", flag.ToString(), binary, videoflag, encrypted);
+                //Plugin.Logger.Info("DVBViewer channel flag: {0}, binary: {1}, videoflag: {2}, encrypted: {3}", flag.ToString(), binary, videoflag, encrypted);
                 if (videoflag == "1")
                     return true;
                 else
