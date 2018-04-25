@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Runtime.Caching;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -14,12 +13,13 @@ using MediaBrowser.Plugins.DVBViewer.Services.Entities;
 namespace MediaBrowser.Plugins.DVBViewer
 {
     /// <summary>
-    /// Provides DVBViewer Recording Service integration for Emby
+    /// Provides DVBViewer Media Server integration for Emby
     /// </summary>
     public class DVBViewerTvService : ILiveTvService
     {
         private static StreamingDetails _currentStreamDetails;
-        private bool refreshTimers = false;
+
+        public DateTime LastRecordingChange = DateTime.MinValue;
 
         public string HomePageUrl
         {
@@ -28,7 +28,7 @@ namespace MediaBrowser.Plugins.DVBViewer
 
         public string Name
         {
-            get { return "DVBViewer (Recording Service)"; }
+            get { return "DVBViewer (DMS)"; }
         }
 
     #region General
@@ -47,7 +47,7 @@ namespace MediaBrowser.Plugins.DVBViewer
                 {
                     HasUpdateAvailable = false,
                     Status = LiveTvServiceStatus.Unavailable,
-                    StatusMessage = "Cannot connect to DVBViewer Recording Service - check your settings",
+                    StatusMessage = "Cannot connect to DVBViewer Media Server - check your settings",
                     Version = String.Format("DVBViewer Live TV Plugin V{0}", pluginVersion)
                 };
             }
@@ -61,20 +61,20 @@ namespace MediaBrowser.Plugins.DVBViewer
                     {
                         HasUpdateAvailable = false,
                         Status = LiveTvServiceStatus.Ok,
-                        StatusMessage = "Successfully connected to DVBViewer Recording Service API",
+                        StatusMessage = "Successfully connected to DVBViewer Media Server API",
                         Version = String.Format("DVBViewer Live TV Plugin V{0} - {1}", pluginVersion, serviceVersion)
                     };
 
                 }
                 catch (Exception ex)
                 {
-                    Plugin.Logger.Error(ex, "Exception occured getting the DVBViewer Recording Service status");
+                    Plugin.Logger.Error(ex, "Exception occured getting the DVBViewer Media Server status");
 
                     result = new LiveTvServiceStatusInfo()
                     {
                         HasUpdateAvailable = false,
                         Status = LiveTvServiceStatus.Unavailable,
-                        StatusMessage = "Cannot connect to DVBViewer Recording Service - check your settings",
+                        StatusMessage = "Cannot connect to DVBViewer Media Server - check your settings",
                         Version = String.Format("DVBViewer Live TV Plugin V{0}", pluginVersion)
                     };
                 }
@@ -99,14 +99,7 @@ namespace MediaBrowser.Plugins.DVBViewer
 
         public Task<ImageStream> GetChannelImageAsync(string channelId, CancellationToken cancellationToken)
         {
-            try
-            {
-                return Task.FromResult(Plugin.TvProxy.GetChannelLogo(channelId, cancellationToken));
-            }
-            catch (System.NullReferenceException)
-            {
-                throw;
-            }
+            throw new NotImplementedException();
         }
 
         public Task<IEnumerable<ProgramInfo>> GetProgramsAsync(string channelId, DateTime startDateUtc, DateTime endDateUtc, CancellationToken cancellationToken)
@@ -123,9 +116,18 @@ namespace MediaBrowser.Plugins.DVBViewer
 
     #region Recordings
 
-        public Task<IEnumerable<RecordingInfo>> GetRecordingsAsync(CancellationToken cancellationToken)
+        public async Task<IEnumerable<RecordingInfo>> GetRecordingsAsync(CancellationToken cancellationToken)
         {
-            return Task.FromResult(Plugin.TvProxy.GetRecordings(cancellationToken));
+            return new List<RecordingInfo>();
+        }
+
+        public Task<IEnumerable<MyRecordingInfo>> GetAllRecordingsAsync(CancellationToken cancellationToken)
+        {
+            if (Plugin.Instance.Configuration.EnableRecordingImport)
+            {
+                return Task.FromResult(Plugin.TvProxy.GetRecordings(cancellationToken));
+            }
+            throw new NotImplementedException();
         }
 
         public Task<ImageStream> GetRecordingImageAsync(string recordingId, CancellationToken cancellationToken)
@@ -136,6 +138,7 @@ namespace MediaBrowser.Plugins.DVBViewer
         public Task DeleteRecordingAsync(string recordingId, CancellationToken cancellationToken)
         {
             Plugin.TvProxy.DeleteRecording(recordingId, cancellationToken);
+            LastRecordingChange = DateTime.UtcNow;
             return Task.Delay(0, cancellationToken);
         }
 
@@ -161,82 +164,54 @@ namespace MediaBrowser.Plugins.DVBViewer
                 RecordAnyChannel = false,
                 RecordAnyTime = false,
                 Days = scheduleDayOfWeek,
-                SkipEpisodesInLibrary = false,
+                SkipEpisodesInLibrary = Plugin.Instance.Configuration.SkipAlreadyInLibrary ? true : false,
             });
         }
 
         public Task<IEnumerable<TimerInfo>> GetTimersAsync(CancellationToken cancellationToken)
         {
-            if (Plugin.Instance.Configuration.EnableTimerCache)
-            {
-                var timerCache = MemoryCache.Default;
-
-                if (refreshTimers)
-                {
-                    timerCache.Remove("timers");
-                    refreshTimers = false;
-                }
-
-                if (!timerCache.Contains("timers"))
-                {
-                    Plugin.Logger.Info("Add timers to memory cache");
-                    var expiration = DateTimeOffset.UtcNow.AddSeconds(20);
-                    var results = Plugin.TvProxy.GetSchedules(cancellationToken);
-
-                    timerCache.Add("timers", Task.FromResult(results), expiration);
-                }
-
-                Plugin.Logger.Info("Return timers from memory cache");
-                return (Task<IEnumerable<TimerInfo>>)timerCache.Get("timers", null);
-            }
-            else
-            {
-                return Task.FromResult(Plugin.TvProxy.GetSchedules(cancellationToken));
-            }
+            return Task.FromResult(Plugin.TvProxy.GetSchedulesFromMemory(cancellationToken));
         }
 
         public Task CreateTimerAsync(TimerInfo info, CancellationToken cancellationToken)
         {
-            refreshTimers = true;
-            Plugin.TvProxy.CreateSchedule(cancellationToken, info);
-            return Task.Delay(0, cancellationToken);
+            var result = Task.FromResult(Plugin.TvProxy.CreateSchedule(cancellationToken, info));
+            LastRecordingChange = DateTime.UtcNow;
+            return result;
         }
 
         public Task UpdateTimerAsync(TimerInfo info, CancellationToken cancellationToken)
         {
-            refreshTimers = true;
-            Plugin.TvProxy.ChangeSchedule(cancellationToken, info);
-            return Task.Delay(0, cancellationToken);
+            var result = Task.FromResult(Plugin.TvProxy.ChangeSchedule(cancellationToken, info));
+            LastRecordingChange = DateTime.UtcNow;
+            return result;
         }
 
         public Task CancelTimerAsync(string timerId, CancellationToken cancellationToken)
         {
-            refreshTimers = true;
-            Plugin.TvProxy.DeleteSchedule(cancellationToken, timerId);
-            return Task.Delay(0, cancellationToken);
+            var result = Task.FromResult(Plugin.TvProxy.DeleteSchedule(cancellationToken, timerId));
+            LastRecordingChange = DateTime.UtcNow;
+            return result;
         }
 
         public Task<IEnumerable<SeriesTimerInfo>> GetSeriesTimersAsync(CancellationToken cancellationToken)
         {
-            return Task.FromResult(Plugin.TvProxy.GetSeriesSchedules(cancellationToken));
+            return Task.FromResult(Plugin.TvProxy.GetSeriesSchedulesFromMemory(cancellationToken));
         }
 
         public Task CreateSeriesTimerAsync(SeriesTimerInfo info, CancellationToken cancellationToken)
         {
-            Plugin.TvProxy.CreateSeriesSchedule(cancellationToken, info);
-            return Task.Delay(0, cancellationToken);
+            return Task.FromResult(Plugin.TvProxy.CreateSeriesSchedule(cancellationToken, info));
         }
 
         public Task UpdateSeriesTimerAsync(SeriesTimerInfo info, CancellationToken cancellationToken)
         {
-            Plugin.TvProxy.ChangeSeriesSchedule(cancellationToken, info);
-            return Task.Delay(0, cancellationToken);
+            return Task.FromResult(Plugin.TvProxy.ChangeSeriesSchedule(cancellationToken, info));
         }
 
         public Task CancelSeriesTimerAsync(string timerId, CancellationToken cancellationToken)
         {
-            Plugin.TvProxy.DeleteSeriesSchedule(cancellationToken, timerId);
-            return Task.Delay(0, cancellationToken);
+            return Task.FromResult(Plugin.TvProxy.DeleteSeriesSchedule(cancellationToken, timerId));
         }
 
     #endregion
@@ -256,8 +231,7 @@ namespace MediaBrowser.Plugins.DVBViewer
 
         public Task<MediaSourceInfo> GetRecordingStream(string recordingId, string streamId, CancellationToken cancellationToken)
         {
-            _currentStreamDetails = Plugin.StreamingProxy.GetRecordingStream(cancellationToken, recordingId, TimeSpan.Zero);
-            return Task.FromResult(_currentStreamDetails.SourceInfo);
+            throw new NotImplementedException();
         }
 
         public Task<List<MediaSourceInfo>> GetRecordingStreamMediaSources(string recordingId, CancellationToken cancellationToken)

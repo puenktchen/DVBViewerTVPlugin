@@ -1,14 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace MediaBrowser.Plugins.DVBViewer.Helpers
 {
     public static class GeneralExtensions
     {
+        public static String ConvertUtf8String(String name)
+        {
+            Encoding dst = Encoding.GetEncoding("iso-8859-1");
+            Encoding src = Encoding.GetEncoding("utf-8");
+            byte[] srcBytes = src.GetBytes(name);
+            byte[] dstBytes = Encoding.Convert(src, dst, srcBytes);
+            byte[] output = Encoding.Convert(src, dst, dstBytes);
+            return Encoding.GetEncoding("iso-8859-1").GetString(output); ;
+        }
+
         public static String ToUrlString(this String value)
         {
             return WebUtility.UrlEncode(value);
@@ -31,22 +43,21 @@ namespace MediaBrowser.Plugins.DVBViewer.Helpers
         public static String ToDelphiDate(this DateTime date)
         {
             date = date.ToLocalTime();
-            var days = ((int)(date - (DateTime.ParseExact("30.12.1899", "dd.MM.yyyy", CultureInfo.InvariantCulture))).TotalDays).ToString();
-            return days;
+            var totaldays = ((int)(date - (DateTime.ParseExact("30.12.1899", "dd.MM.yyyy", CultureInfo.InvariantCulture))).TotalDays).ToString();
+            return totaldays;
         }
 
-        public static int ToDelphiTime(this DateTime time)
+        public static String ToDelphiTime(this DateTime time)
         {
             time = time.ToLocalTime();
-            var minutes = time.Hour * 60 + time.Minute;
-            return minutes;
+            var totaltime = String.Format("{0:0.00000000}", (time.Hour * 60 + time.Minute) / (24d * 60d)).Remove(0, 2);
+            return totaltime;
         }
 
         public static String FloatDateTime(this DateTime value)
         {
             string totaldays = ToDelphiDate(value);
-            double floattime = ToDelphiTime(value) / (24d * 60d);
-            string totaltime = String.Format("{0:0.00000000}", floattime).Remove(0, 2);
+            string totaltime = ToDelphiTime(value);
             return String.Format("{0}.{1}", totaldays, totaltime);
         }
 
@@ -70,16 +81,6 @@ namespace MediaBrowser.Plugins.DVBViewer.Helpers
             return searchTime;
         }
 
-        public static String SetChannelId(this String channelId)
-        {
-            return String.Format("TV-{0}", channelId);
-        }
-
-        public static String SetRecordingId(this String recordingId)
-        {
-            return String.Format("Recording-{0}", recordingId);
-        }
-
         public static String SetEventId(String channel, String starttime, String endtime)
         {
             return String.Format("{0}|{1}|{2}", channel, starttime, endtime);
@@ -87,13 +88,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Helpers
 
         public static String SetSearchPhrase(this String searchname)
         {
-            return String.Format("^{0}$", Regex.Replace(searchname, @"[^\w\.-@! ]", "?"));
-        }
-
-        public static String GetScheduleChannel(this String Id)
-        {
-            string[] channelId = Id.Split('|');
-            return channelId[0];
+            return String.Format("^{0}$", Regex.Replace(searchname, @"[^\w\.-@! ]", "?")).ToUrlString();
         }
 
         public static String GetScheduleName(this String name)
@@ -105,30 +100,22 @@ namespace MediaBrowser.Plugins.DVBViewer.Helpers
             return name;
         }
 
-        public static void GetSearchDays(int input, int power, ICollection<int> numbers)
+        public static String ProgramImageUrl(this String channellogo)
         {
-            if (input == 0)
-                return;
-
-            var digit = input % 2;
-            if (digit == 1)
-                numbers.Add((int)Math.Pow(2, power));
-
-            GetSearchDays(input / 2, ++power, numbers);
+            var localImage = Path.Combine(Plugin.Instance.DataFolderPath, "channelthumbs", WebUtility.UrlDecode(channellogo).Split('\\').Last());
+            return localImage;
         }
 
-        public static String ChannelImageUrl(this String value)
+        public static String ProgramImagePosterUrl(this String channellogo)
         {
-            var config = Plugin.Instance.Configuration;
-            if (Plugin.Instance.Configuration.RequiresAuthentication)
-                return String.Format("http://{0}:{1}@{2}:{3}/api/{4}", config.UserName, config.Password, config.ApiHostName, config.ApiPortNumber, value);
-            else
-                return String.Format("http://{0}:{1}/api/{2}", config.ApiHostName, config.ApiPortNumber, value);
+            var localImage = Path.Combine(Plugin.Instance.DataFolderPath, "channelthumbs", WebUtility.UrlDecode(channellogo).Split('\\').Last());
+            return Path.Combine(Plugin.Instance.DataFolderPath, "channelthumbs", Path.GetFileNameWithoutExtension(localImage) + "-poster.png");
         }
 
-        public static String RecordingImageUrl(String baseurl, String value)
+        public static String ProgramImageLandscapeUrl(this String channellogo)
         {
-            return String.Format("{0}{1}", baseurl, value);
+            var localImage = Path.Combine(Plugin.Instance.DataFolderPath, "channelthumbs", WebUtility.UrlDecode(channellogo).Split('\\').Last());
+            return Path.Combine(Plugin.Instance.DataFolderPath, "channelthumbs", Path.GetFileNameWithoutExtension(localImage) + "-landscape.png");
         }
 
         public static bool HasVideoFlag (this int flag)

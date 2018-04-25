@@ -6,7 +6,7 @@ In addition to Emby Server, this plugin requires a fully configured DVBViewer Re
 	<li><a href="http://en.dvbviewer.tv/wiki/Recording_Service_Installation_Guide">Recording Service setup</a></li>
 </ul>
 
-
+&nbsp;<br />
 <strong>Installation</strong></p>
 
 <ul>

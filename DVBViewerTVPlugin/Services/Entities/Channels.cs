@@ -16,25 +16,25 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
         public string UpnpURL { get; set; }
 
         [XmlElement("root")]
-        public Scanroot Scanroot { get; set; }
+        public Root Root { get; set; }
     }
 
-    public class Scanroot
+    public class Root
     {
         [XmlElement("group")]
-        public List<Channelgroup> Channelgroup { get; set; }
+        public List<ChannelGroup> ChannelGroup { get; set; }
 
         [XmlAttribute("name")]
-        public string ScanrootName { get; set; }
+        public string RootName { get; set; }
     }
 
-    public class Channelgroup
+    public class ChannelGroup
     {
         [XmlElement("channel")]
         public List<Channel> Channel { get; set; }
 
         [XmlAttribute("name")]
-        public string ChannelgroupName { get; set; }
+        public string ChannelGroupName { get; set; }
     }
 
     public class Channel
@@ -55,7 +55,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
         public int Flags { get; set; }
 
         [XmlAttribute("ID")]
-        public string ID { get; set; }
+        public string Id { get; set; }
 
         [XmlElement("logo"), DefaultValue("")]
         public string Logo { get; set; }

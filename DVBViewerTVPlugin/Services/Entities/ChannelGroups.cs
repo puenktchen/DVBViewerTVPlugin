@@ -9,10 +9,4 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
         [XmlElement("root")]
         public List<string> RootGroups { get; set; }
     }
-
-    //public class RootGroups
-    //{
-    //    [XmlText]
-    //    public string Name { get; set; }
-    //}
 }

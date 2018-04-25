@@ -18,8 +18,14 @@ namespace MediaBrowser.Plugins.DVBViewer.Configuration
         {
             ApiHostName = "localhost";
             ApiPortNumber = 8089;
+            StreamPortNumber = 7522;
+            MediaPortNumber = 8090;
+            ChannelFavourites = true;
+            ProgramImages = false;
+            EnableProbing = true;
             TimerPrePadding = 5;
             TimerPostPadding = 10;
+            EnableRecordingImport = true;
             CheckRecordingTitel = true;
             CheckRecordingInfo = true;
             CheckTimerName = true;
@@ -30,39 +36,64 @@ namespace MediaBrowser.Plugins.DVBViewer.Configuration
         }
 
         /// <summary>
-        /// The url / ip address that DVBViewer Recording Service is hosted on
+        /// The url / ip address that DVBViewer Media Server is hosted on
         /// </summary>
         public string ApiHostName { get; set; }
 
         /// <summary>
-        /// The port number that DVBViewer Recording Service is hosted on
+        /// The port number that DVBViewer Media Server is hosted on
         /// </summary>
         public Int32 ApiPortNumber { get; set; }
 
         /// <summary>
-        /// Indicates whether DVBViewer Recording Service requires authentication
+        /// The port number that DVBViewer Media Server is hosted on
+        /// </summary>
+        public Int32 StreamPortNumber { get; set; }
+
+        /// <summary>
+        /// The port number that DVBViewer Media Server is hosted on
+        /// </summary>
+        public Int32 MediaPortNumber { get; set; }
+
+        /// <summary>
+        /// Indicates whether DVBViewer Media Server requires authentication
         /// </summary>
         public bool RequiresAuthentication { get; set; }
 
         /// <summary>
-        /// The user name for authenticating with DVBViewer Recording Service
+        /// The user name for authenticating with DVBViewer Media Server
         /// </summary>
         public string UserName { get; set; }
 
         /// <summary>
-        /// The password for authenticating with DVBViewer Recording Service
+        /// The password for authenticating with DVBViewer Media Server
         /// </summary>
         public string Password { get; set; }
 
         /// <summary>
-        /// The default channel group to use in MB
+        /// Use channel favourites instead of channel scan groups
+        /// </summary>
+        public bool ChannelFavourites { get; set; }
+
+        /// <summary>
+        /// The default channel group to use in Emby
         /// </summary>
         public String DefaultChannelGroup { get; set; }
 
         /// <summary>
-        /// The genre mappings, to map localised MP genres, to MB genres.
+        /// The genre mappings, to map localised DVBViewer genres, to Emby categories.
         /// </summary>
         public SerializableDictionary<String, List<String>> GenreMappings { get; set; }
+
+        /// <summary>
+        /// Enable program images
+        /// </summary>
+        public bool ProgramImages { get; set; }
+
+        /// <summary>
+        /// Enables streaming probing for live tv
+        /// </summary>
+        public bool EnableProbing { get; set; }
 
         /// <summary>
         /// Timer default pre padding in minutes
@@ -73,6 +104,11 @@ namespace MediaBrowser.Plugins.DVBViewer.Configuration
         /// Timer default post padding in minutes
         /// </summary>
         public Int32? TimerPostPadding { get; set; }
+
+        /// <summary>
+        /// The default task executed after recording ends
+        /// </summary>
+        public String TimerTask { get; set; }
 
         /// <summary>
         /// Checks the recording titel in AutoSearch to prevent recording repeats
@@ -88,6 +124,31 @@ namespace MediaBrowser.Plugins.DVBViewer.Configuration
         /// Checks the timer name in AutoSearch to prevent recording repeats
         /// </summary>
         public bool CheckTimerName { get; set; }
+
+        /// <summary>
+        /// Skips timers if item is already in Emby library
+        /// </summary>
+        public bool SkipAlreadyInLibrary { get; set; }
+
+        /// <summary>
+        /// Skips timers method for items already in Emby library
+        /// </summary>
+        public String SkipAlreadyInLibraryProfile { get; set; }
+
+        /// <summary>
+        /// Autocreates timers based on missing episodes in Emby library
+        /// </summary>
+        public bool AutoCreateTimers { get; set; }
+
+        /// <summary>
+        /// Enable import of MediaPortal recordings
+        /// </summary>
+        public bool EnableRecordingImport { get; set; }
+
+        /// <summary>
+        /// Enable TMDB online lookup for recording posters
+        /// </summary>
+        public bool EnableTmdbLookup { get; set; }
 
         /// <summary>
         /// Enable direct access to recordings
@@ -110,6 +171,11 @@ namespace MediaBrowser.Plugins.DVBViewer.Configuration
         public string RemoteFilePath { get; set; }
 
         /// <summary>
+        /// Enable custom image processing
+        /// </summary>
+        public bool EnableImageProcessing { get; set; }
+
+        /// <summary>
         /// Enable one time schedules caching
         /// </summary>
         public bool EnableTimerCache { get; set; }
@@ -127,24 +193,34 @@ namespace MediaBrowser.Plugins.DVBViewer.Configuration
         {
             if (String.IsNullOrEmpty(ApiHostName))
             {
-                return new ValidationResult(false, "Please specify an API HostName (the box DVBViewer Recording Service is installed on)");
+                return new ValidationResult(false, "Please specify an API HostName (the box DVBViewer Media Server is installed on)");
             }
 
             if (ApiPortNumber < 1)
             {
-                return new ValidationResult(false, "Please specify an API Port Number (usually 4322)");
+                return new ValidationResult(false, "Please specify an API Port Number (usually 8089)");
+            }
+
+            if (StreamPortNumber < 1)
+            {
+                return new ValidationResult(false, "Please specify an Live Streamserver Port Number (usually 7522)");
+            }
+
+            if (MediaPortNumber < 1)
+            {
+                return new ValidationResult(false, "Please specify an Media Streamserver Port Number (usually 8090)");
             }
 
             if (RequiresAuthentication)
             {
                 if (String.IsNullOrEmpty(UserName))
                 {
-                    return new ValidationResult(false, "Please specify a UserName (check DVBViewer Recording Service - Authentication");
+                    return new ValidationResult(false, "Please specify a UserName (check DVBViewer Media Server - Authentication");
                 }
 
                 if (String.IsNullOrEmpty(Password))
                 {
-                    return new ValidationResult(false, "Please specify an Password (check DVBViewer Recording Service - Authentication");
+                    return new ValidationResult(false, "Please specify an Password (check DVBViewer Media Server - Authentication");
                 }
             }
 

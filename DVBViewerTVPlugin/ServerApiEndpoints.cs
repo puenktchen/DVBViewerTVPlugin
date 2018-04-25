@@ -12,7 +12,12 @@ namespace MediaBrowser.Plugins.DVBViewer
     {
     }
 
-    [Route("/DVBViewerPlugin/TestConnection", "GET", Summary = "Tests the connection to DVBViewer Recording Service")]
+    [Route("/DVBViewerPlugin/SkipAlreadyInLibraryProfiles", "GET", Summary = "Gets a list of profiles to skip timers for Emy library items")]
+    public class GetSkipAlreadyInLibraryProfiles : IReturn<List<String>>
+    {
+    }
+
+    [Route("/DVBViewerPlugin/TestConnection", "GET", Summary = "Tests the connection to DVBViewer Media Server")]
     public class GetConnection : IReturn<Boolean>
     {
     }
@@ -24,7 +29,12 @@ namespace MediaBrowser.Plugins.DVBViewer
             var channelGroups = new List<string>();
             try
             {
-                channelGroups = Plugin.TvProxy.GetChannelGroups(new CancellationToken()).RootGroups;               
+                channelGroups = Plugin.TvProxy.GetChannelGroups(new CancellationToken()).RootGroups;
+                foreach (var name in channelGroups)
+                {
+                    Plugin.Logger.Info("Kanalgruppenname: {0}", name);
+                }
+                              
             }
             catch (ServiceAuthenticationException)
             {
@@ -36,6 +46,11 @@ namespace MediaBrowser.Plugins.DVBViewer
             }
 
             return channelGroups;
+        }
+
+        public object Get(GetSkipAlreadyInLibraryProfiles request)
+        {
+            return new List<string>(new string[] { "Season and Episode Numbers", "Episode Name" });
         }
 
         public object Get(GetConnection request)

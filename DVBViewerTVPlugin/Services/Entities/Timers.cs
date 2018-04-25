@@ -12,20 +12,23 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
 
     public class Timer
     {
-        //[XmlAttribute("ID")]
-        //public string TimerID { get; set; }
+        [XmlElement("ID")]
+        public string Id { get; set; }
 
-        //[XmlAttribute("Type")]
-        //public string Type { get; set; }
+        [XmlElement("Descr")]
+        public string Description { get; set; }
 
         [XmlAttribute("Enabled")]
         public string Enabled { get; set; }
 
-        //[XmlAttribute("Priority")]
-        //public string Priority { get; set; }
+        [XmlElement("Executeable")]
+        public string Executeable { get; set; }
 
-        //[XmlAttribute("Charset")]
-        //public string Charset { get; set; }
+        [XmlElement("Recording")]
+        public string Recording { get; set; }
+
+        [XmlAttribute("Days")]
+        public string Days { get; set; }
 
         [XmlAttribute("Date")]
         public string Date { get; set; }
@@ -34,7 +37,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
         public string Start { get; set; }
 
         [XmlAttribute("Dur")]
-        public int Dur { get; set; }
+        public int Duration { get; set; }
 
         [XmlAttribute("End")]
         public string End { get; set; }
@@ -45,23 +48,26 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
         [XmlAttribute("PostEPG")]
         public int PostEPG { get; set; }
 
+        [XmlElement("Series")]
+        public string Series { get; set; }
+
+        //[XmlElement("Source")]
+        //public string Source { get; set; }
+
+        //[XmlAttribute("Priority")]
+        //public string Priority { get; set; }
+
         //[XmlAttribute("Action")]
         //public string Action { get; set; }
+
+        //[XmlAttribute("Type")]
+        //public string Type { get; set; }
 
         //[XmlAttribute("EPGEventID")]
         //public string EPGEventID { get; set; }
 
-        [XmlAttribute("Days")]
-        public string Days { get; set; }
-
-        [XmlElement("ID")]
-        public string TimerID { get; set; }
-
         //[XmlElement("GUID")]
         //public string GUID { get; set; }
-
-        [XmlElement("Descr")]
-        public string Description { get; set; }
 
         //[XmlElement("Format")]
         //public string Format { get; set; }
@@ -72,29 +78,36 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
         //[XmlElement("NameScheme")]
         //public string NameScheme { get; set; }
 
-        [XmlElement("Series")]
-        public string Series { get; set; }
-
-        //[XmlElement("Source")]
-        //public string Source { get; set; }
-
-        [XmlElement("Executeable")]
-        public string Executeable { get; set; }
-
-        [XmlElement("Recording")]
-        public string Recording { get; set; }
-
         //[XmlElement("Options")]
         //public Options Options { get; set; }
 
         [XmlElement("Channel")]
-        public TimerChannel Channel { get; set; }
+        public TimerChannel Channel { private get; set; }
+
+        public string ChannelId
+        {
+            get
+            {
+                if (Channel != null)
+                {
+                    return Channel.Id.Split('|').GetValue(0).ToString();
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            set
+            {
+                ChannelId = value;
+            }
+        }
     }
 
     public class TimerChannel
     {
         [XmlAttribute("ID")]
-        public string ChannelID { get; set; }
+        public string Id { get; set; }
     }
 
     //public class Options

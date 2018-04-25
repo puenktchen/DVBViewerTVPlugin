@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using System.Xml.Serialization;
 
 namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
@@ -15,8 +17,8 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
         [XmlAttribute("Name")]
         public string Name { get; set; }
 
-        [XmlAttribute("Autorecording")]
-        public string Autorecording { get; set; }
+        [XmlAttribute("AutoRecording")]
+        public string AutoRecording { get; set; }
 
         [XmlAttribute("CheckRecTitle")]
         public string CheckRecTitle { get; set; }
@@ -27,14 +29,17 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
         [XmlAttribute("CheckTimer")]
         public string CheckTimer { get; set; }
 
+        [XmlElement("Priority")]
+        public int Priority { get; set; }
+
         [XmlElement("Series")]
         public string Series { get; set; }
 
-        [XmlElement("searchphrase")]
-        public string Searchphrase { get; set; }
+        [XmlElement("SearchPhrase")]
+        public string SearchPhrase { get; set; }
 
-        [XmlElement("Starttime")]
-        public string Starttime { get; set; }
+        [XmlElement("StartTime")]
+        public string StartTime { get; set; }
 
         [XmlElement("EndTime")]
         public string EndTime { get; set; }
@@ -48,25 +53,34 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
         [XmlElement("Days")]
         public int Days { get; set; }
 
-        [XmlElement("channels")]
+        [XmlElement("Channels")]
         public SearchChannels Channels { get; set; }
 
-        public string GetChannel()
+        public string ChannelId
         {
-            if (Channels != null)
+            get
             {
-                return Channels.Channel[0];
+                if (Channels != null)
+                {
+                    return Plugin.TvProxy.GetChannelList(new CancellationToken()).Root.ChannelGroup.SelectMany(c => c.Channel)
+                        .Where(x => x.EPGID.Equals(Channels.Channel[0]))
+                        .First().Id;
+                }
+                else
+                {
+                    return null;
+                }
             }
-            else
+            set
             {
-                return null;
+                ChannelId = value;
             }
         }
     }
 
     public class SearchChannels
     {
-        [XmlElement("channel")]
+        [XmlElement("Channel")]
         public List<string> Channel { get; set; }
     }
 }
