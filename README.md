@@ -1,4 +1,4 @@
-<strong>An Emby Live TV Plugin for DVBViewer Recording Service</strong>
+<strong>An Emby Live TV Plugin for DVBViewer Media Server</strong>
 
 In addition to Emby Server, this plugin requires a fully configured DVBViewer Media Server installation.
 Recording Service is not supported anymore! Although some parts like streaming probably are still working.
