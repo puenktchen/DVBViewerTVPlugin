@@ -63,26 +63,26 @@
                                     Select the channel group you wish to use in Emby
                                 </div>
                             </div>
-                        </div>
-                    </div>
-
-                    <div is="emby-collapse" title="Program Options">
-                        <div class="collapseContent">
                             <label class="checkboxContainer">
                                 <input is="emby-checkbox" type="checkbox" id="chkProgramImages" />
                                 <span>Use channel logos as program images</span>
                             </label>
-                            <p>Searches program description for genre keywords and maps the show to Emby categories</p>
+                        </div>
+                    </div>
+
+                    <div is="emby-collapse" title="Program and Recording Category Options">
+                        <div class="collapseContent">
+                            <p>Searches DVBViewer program and recording description for genre keywords and maps the show to Emby categories</p>
                             <div class="inputContainer">
                                 <input is="emby-input" id="txtMovieGenre" name="txtMovieGenre" label="Movie genres:" />
                                 <div class="fieldDescription">
-                                    Example: Movie,Genre: Film,TvMovie
+                                    Example: Movie,Genre: Film,Action (Movie)
                                 </div>
                             </div>
                             <div class="inputContainer">
                                 <input is="emby-input" id="txtSeriesGenre" name="txtSeriesGenre" label="Series genres:" />
                                 <div class="fieldDescription">
-                                    Example: Action Series,Genre: Drama (Series),Daily Soap (limits series recordings to these genres. If unsure, leave empty.)
+                                    Example: Action Series,Genre: Drama (Series),Daily Soap
                                 </div>
                             </div>
                             <div class="inputContainer">
@@ -92,7 +92,7 @@
                                 </div>
                             </div>
                             <div class="inputContainer">
-                                <input is="emby-input" id="txtNewsGenre" name="txtNewsGenre" label="News genres:" />
+                                <input is="emby-input" id="txtNewsGenre" name="txtNewsGenre" label="News or documentary genres:" />
                                 <div class="fieldDescription">
                                     Example: News Report,Daily News
                                 </div>

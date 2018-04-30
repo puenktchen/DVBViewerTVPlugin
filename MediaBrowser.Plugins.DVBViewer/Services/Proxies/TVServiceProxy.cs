@@ -124,7 +124,6 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Proxies
                 var program = new ProgramInfo()
                 {
                     Name = p.Name,
-                    EpisodeTitle = Regex.Replace(p.EpisodeTitle, @"(^[s]?[0-9]*[e|x|\.][0-9]*[^\w]+)|(\s[\(]?[s]?[0-9]*[e|x|\.][0-9]*[\)]?$)", String.Empty, RegexOptions.IgnoreCase),
                     EpisodeNumber = p.EpisodeNumber,
                     SeasonNumber = p.SeasonNumber,
                     Id = GeneralExtensions.SetEventId(channelId, p.Start, p.Stop),
@@ -138,6 +137,11 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Proxies
                 if (!String.IsNullOrEmpty(p.Overview))
                 {
                     genreMapper.PopulateProgramGenres(program);
+                }
+
+                if (program.IsSeries && p.Name != p.EpisodeTitle)
+                {
+                    program.EpisodeTitle = Regex.Replace(p.EpisodeTitle, @"(^[s]?[0-9]*[e|x|\.][0-9]*[^\w]+)|(\s[\(]?[s]?[0-9]*[e|x|\.][0-9]*[\)]?$)", String.Empty, RegexOptions.IgnoreCase);
                 }
 
                 if (!String.IsNullOrEmpty(Regex.Match(p.Name, @"(?<=\()\d{4}(?=\)$)").Value))
