@@ -75,12 +75,15 @@ namespace MediaBrowser.Plugins.DVBViewer.Helpers
 
             foreach (var program in programs)
             {
-                foreach (var episode in missingEpisodes.Where(x =>
+                if (!String.IsNullOrEmpty(program.Name))
+                {
+                    foreach (var episode in missingEpisodes.Where(x =>
                     x.Parent.Parent.Name.Contains(Regex.Replace(program.Name, @"\s\W[a-zA-Z]?[0-9]{1,3}?\W$", String.Empty)) &&
                     x.IndexNumber.Equals(Convert.ToInt32(program.EpisodeNumber)) &&
                     x.ParentIndexNumber.Equals(Convert.ToInt32(program.SeasonNumber))))
-                {
-                    CreateTimer(cancellationToken, program, timers);
+                    {
+                        CreateTimer(cancellationToken, program, timers);
+                    }
                 }
             }
 

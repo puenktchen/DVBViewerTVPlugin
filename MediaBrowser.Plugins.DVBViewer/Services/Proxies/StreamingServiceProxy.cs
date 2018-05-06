@@ -4,7 +4,6 @@ using System.Net;
 using System.Threading;
 
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.LiveTv;
 using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Serialization;

@@ -17,16 +17,16 @@
                         </div>
                     </div>
                     <div class="inputContainer">
-                        <input is="emby-input" id="txtStreamPortNumber" name="txtStreamPortNumber" label="Webserver Port number:" />
+                        <input is="emby-input" id="txtApiPortNumber" name="txtApiPortNumber" label="Webserver Port number:" />
                         <div class="fieldDescription">
                             The Webserver port number of the DVBViewer Media Server
                         </div>
                     </div>
                     <div class="inputContainer">
-                        <input is="emby-input" id="txtMediaPortNumber" name="txtMediaPortNumber" label="Live Streamserver Port number:" />
+                        <input is="emby-input" id="txtStreamPortNumber" name="txtStreamPortNumber" label="Live Streamserver Port number:" />
                     </div>
                     <div class="inputContainer">
-                        <input is="emby-input" id="txtApiPortNumber" name="txtApiPortNumber" label="Media Streamserver Port number:" />
+                        <input is="emby-input" id="txtMediaPortNumber" name="txtMediaPortNumber" label="Media Streamserver Port number:" />
                     </div>
                     <label class="checkboxContainer">
                         <input is="emby-checkbox" type="checkbox" id="chkRequiresAuthentication" />
@@ -124,14 +124,18 @@
                                     The name of the task that shall be executed after the recording has finished
                                 </div>
                             </div>
-                            <div>Prevent recording repeats from EPG AutoSearch by:</div>
+                            <div>Prevent recording repeats from EPG AutoSearch by checking against:</div>
                             <label class="checkboxContainer">
-                                <input is="emby-checkbox" type="checkbox" id="chkCheckRecordingTitel" />
-                                <span>Recording Titel</span>
+                                <input is="emby-checkbox" type="checkbox" id="chkCheckRecordingTitle" />
+                                <span>Recording Title (existing) vs. EPG Title</span>
                             </label>
                             <label class="checkboxContainer">
-                                <input is="emby-checkbox" type="checkbox" id="chkCheckRecordingInfo" />
-                                <span>Recording Info</span>
+                                <input is="emby-checkbox" type="checkbox" id="chkCheckRecordingSubTitle" />
+                                <span>Recording Subtitle (existing) vs. EPG Subtitle</span>
+                            </label>
+                            <label class="checkboxContainer">
+                                <input is="emby-checkbox" type="checkbox" id="chkCheckRemovedRecording" />
+                                <span>Removed Recording</span>
                             </label>
                             <label class="checkboxContainer">
                                 <input is="emby-checkbox" type="checkbox" id="chkCheckTimerName" />
@@ -330,8 +334,9 @@
                     $('#txtTimerPrePadding', page).val(config.TimerPrePadding);
                     $('#txtTimerPostPadding', page).val(config.TimerPostPadding);
                     $('#txtTimerTask', page).val(config.TimerTask);
-                    $('#chkCheckRecordingTitel', page).checked(config.CheckRecordingTitel || false).checkboxradio("refresh");
-                    $('#chkCheckRecordingInfo', page).checked(config.CheckRecordingInfo || false).checkboxradio("refresh");
+                    $('#chkCheckRecordingTitle', page).checked(config.CheckRecordingTitle || false).checkboxradio("refresh");
+                    $('#chkCheckRecordingSubTitle', page).checked(config.CheckRecordingSubTitle || false).checkboxradio("refresh");
+                    $('#chkCheckRemovedRecording', page).checked(config.CheckRemovedRecording || false).checkboxradio("refresh");
                     $('#chkCheckTimerName', page).checked(config.CheckTimerName || false).checkboxradio("refresh");
                     $('#chkSkipAlreadyInLibrary', page).checked(config.SkipAlreadyInLibrary || false).checkboxradio("refresh");
                     $('#chkAutoCreateTimers', page).checked(config.AutoCreateTimers || false).checkboxradio("refresh");
@@ -432,8 +437,9 @@
                     config.TimerPrePadding = $('#txtTimerPrePadding', form).val();
                     config.TimerPostPadding = $('#txtTimerPostPadding', form).val();
                     config.TimerTask = $('#txtTimerTask', form).val();
-                    config.CheckRecordingTitel = $('#chkCheckRecordingTitel', form).checked();
-                    config.CheckRecordingInfo = $('#chkCheckRecordingInfo', form).checked();
+                    config.CheckRecordingTitle = $('#chkCheckRecordingTitle', form).checked();
+                    config.CheckRecordingSubTitle = $('#chkCheckRecordingSubTitle', form).checked();
+                    config.CheckRemovedRecording = $('#chkCheckRemovedRecording', form).checked();
                     config.CheckTimerName = $('#chkCheckTimerName', form).checked();
                     config.SkipAlreadyInLibrary = $('#chkSkipAlreadyInLibrary', form).checked();
                     config.SkipAlreadyInLibraryProfile = $('#selectSkipAlreadyInLibraryProfile', form).val();

@@ -27,20 +27,88 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
         public string Id { get; set; }
 
         [XmlElement("title"), DefaultValue("")]
-        public string Name { get; set; }
+        public string Title { get; set; }
+
+        public string Name
+        {
+            get
+            {
+                if (!String.IsNullOrEmpty(Title))
+                {
+                    return Regex.Replace(Title, @"\s\W[a-zA-Z]?[0-9]{1,3}?\W$", String.Empty);
+                }
+                return null;
+            }
+            set
+            {
+                Name = value;
+            }
+        }
+
+        public string MovieName
+        {
+            get
+            {
+                if (!String.IsNullOrEmpty(Title))
+                {
+                    return Regex.Replace(Title, @"(?<=\S)\s\W\d{4}\W(?=$)", String.Empty);
+                }
+                return null;
+            }
+            set
+            {
+                MovieName = value;
+            }
+        }
+
+        int year;
+        public int? Year
+        {
+            get
+            {
+                if (!String.IsNullOrEmpty(Title))
+                {
+                    if (Int32.TryParse((Regex.Match(Title, @"(?<=\()\d{4}(?=\)$)").Value), out year))
+                    {
+                        return year;
+                    }
+                }
+                return null;
+            }
+            set
+            {
+                Year = value;
+            }
+        }
+
 
         [XmlElement("info"), DefaultValue("")]
-        public string EpisodeTitle { get; set; }
+        public string Info { get; set; }
 
+        public string EpisodeTitle
+        {
+            get
+            {
+                if (!String.IsNullOrEmpty(Info))
+                {
+                    return Regex.Replace(Info, @"(^[s]?[0-9]*[e|x|\.][0-9]*[^\w]+)|(\s[\(]?[s]?[0-9]*[e|x|\.][0-9]*[\)]?$)", String.Empty, RegexOptions.IgnoreCase);
+                }
+                return null;
+            }
+            set
+            {
+                EpisodeTitle = value;
+            }
+        }
 
         int episodeNumber;
         public int? EpisodeNumber
         {
             get
             {
-                if (!String.IsNullOrEmpty(EpisodeTitle))
+                if (!String.IsNullOrEmpty(Info))
                 {
-                    if (Int32.TryParse(Regex.Match(Regex.Match(EpisodeTitle, @"(?<=[s]?[0-9]+)[e|x|\.][0-9]+\s", RegexOptions.IgnoreCase).Value, @"\d+").Value, out episodeNumber))
+                    if (Int32.TryParse(Regex.Match(Regex.Match(Info, @"(?<=[s]?[0-9]+)[e|x|\.][0-9]+\s", RegexOptions.IgnoreCase).Value, @"\d+").Value, out episodeNumber))
                     {
                         return episodeNumber;
                     }
@@ -58,9 +126,9 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
         {
             get
             {
-                if (!String.IsNullOrEmpty(EpisodeTitle))
+                if (!String.IsNullOrEmpty(Info))
                 {
-                    if (Int32.TryParse(Regex.Match(Regex.Match(EpisodeTitle, @"[s]?[0-9]+(?=[e|x|\.][0-9]+\s)", RegexOptions.IgnoreCase).Value, @"\d+").Value, out seasonNumber))
+                    if (Int32.TryParse(Regex.Match(Regex.Match(Info, @"[s]?[0-9]+(?=[e|x|\.][0-9]+\s)", RegexOptions.IgnoreCase).Value, @"\d+").Value, out seasonNumber))
                     {
                         return seasonNumber;
                     }
@@ -101,14 +169,18 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
             {
                 if (ChannelName != null)
                 {
-                    return Plugin.TvProxy.GetChannelList(new CancellationToken()).Root.ChannelGroup.SelectMany(c => c.Channel)
+                    try
+                    {
+                        return Plugin.TvProxy.GetChannelList(new CancellationToken()).Root.ChannelGroup.SelectMany(c => c.Channel)
                         .Where(x => x.Name.Equals(ChannelName, StringComparison.OrdinalIgnoreCase))
                         .First().Id;
+                    }
+                    catch (Exception)
+                    {
+                        return null;
+                    }
                 }
-                else
-                {
-                    return null;
-                }
+                return null;
             }
             set
             {

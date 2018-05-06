@@ -34,14 +34,31 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
                 {
                     return Titles.Title;
                 }
-                else
-                {
-                    return Title;
-                }
+                return Title;
             }
             set
             {
                 Name = value;
+            }
+        }
+
+        int productionYear;
+        public int? ProductionYear
+        {
+            get
+            {
+                if (!String.IsNullOrEmpty(Name))
+                {
+                    if (Int32.TryParse((Regex.Match(Name, @"(?<=\()\d{4}(?=\)$)").Value), out productionYear))
+                    {
+                        return productionYear;
+                    }
+                }
+                return null;
+            }
+            set
+            {
+                ProductionYear = value;
             }
         }
 
@@ -58,12 +75,19 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
             {
                 if (Events != null)
                 {
-                    return Events.Event;
+                    if (!String.IsNullOrEmpty(Events.Event))
+                    {
+                        return Regex.Replace(Events.Event, @"(^[s]?[0-9]*[e|x|\.][0-9]*[^\w]+)|(\s[\(]?[s]?[0-9]*[e|x|\.][0-9]*[\)]?$)", String.Empty, RegexOptions.IgnoreCase);
+                    }
                 }
                 else
                 {
-                    return Event;
+                    if (!String.IsNullOrEmpty(Event))
+                    {
+                        return Regex.Replace(Event, @"(^[s]?[0-9]*[e|x|\.][0-9]*[^\w]+)|(\s[\(]?[s]?[0-9]*[e|x|\.][0-9]*[\)]?$)", String.Empty, RegexOptions.IgnoreCase);
+                    }
                 }
+                return null;
             }
             set
             {
@@ -77,14 +101,28 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
         {
             get
             {
-                if (!String.IsNullOrEmpty(EpisodeTitle))
+                if (Events != null)
                 {
-                    if (Int32.TryParse(Regex.Match(Regex.Match(EpisodeTitle, @"(?<=[s]?[0-9]+)[e|x|\.][0-9]+\s", RegexOptions.IgnoreCase).Value, @"\d+").Value, out episodeNumber))
+                    if (!String.IsNullOrEmpty(Events.Event))
                     {
-                        return episodeNumber;
+                        if (Int32.TryParse(Regex.Match(Regex.Match(Events.Event, @"(?<=[s]?[0-9]+)[e|x|\.][0-9]+\s", RegexOptions.IgnoreCase).Value, @"\d+").Value, out episodeNumber))
+                        {
+                            return episodeNumber;
+                        }
                     }
+                    return null;
                 }
-                return null;
+                else
+                {
+                    if (!String.IsNullOrEmpty(Event))
+                    {
+                        if (Int32.TryParse(Regex.Match(Regex.Match(Event, @"(?<=[s]?[0-9]+)[e|x|\.][0-9]+\s", RegexOptions.IgnoreCase).Value, @"\d+").Value, out episodeNumber))
+                        {
+                            return episodeNumber;
+                        }
+                    }
+                    return null;
+                }
             }
             set
             {
@@ -97,14 +135,28 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
         {
             get
             {
-                if (!String.IsNullOrEmpty(EpisodeTitle))
+                if (Events != null)
                 {
-                    if (Int32.TryParse(Regex.Match(Regex.Match(EpisodeTitle, @"[s]?[0-9]+(?=[e|x|\.][0-9]+\s)", RegexOptions.IgnoreCase).Value, @"\d+").Value, out seasonNumber))
+                    if (!String.IsNullOrEmpty(Events.Event))
                     {
-                        return seasonNumber;
+                        if (Int32.TryParse(Regex.Match(Regex.Match(Events.Event, @"[s]?[0-9]+(?=[e|x|\.][0-9]+\s)", RegexOptions.IgnoreCase).Value, @"\d+").Value, out seasonNumber))
+                        {
+                            return seasonNumber;
+                        }
                     }
+                    return null;
                 }
-                return null;
+                else
+                {
+                    if (!String.IsNullOrEmpty(Event))
+                    {
+                        if (Int32.TryParse(Regex.Match(Regex.Match(Event, @"[s]?[0-9]+(?=[e|x|\.][0-9]+\s)", RegexOptions.IgnoreCase).Value, @"\d+").Value, out seasonNumber))
+                        {
+                            return seasonNumber;
+                        }
+                    }
+                    return null;
+                }
             }
             set
             {
@@ -127,17 +179,12 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
                 {
                     return Descriptions.Description;
                 }
-                else
-                {
-                    return Description;
-                }
+                return Description;
             }
             set
             {
                 Overview = value;
             }
-
-            
         }
 
 
@@ -166,14 +213,18 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
             {
                 if (ChannelEPGID != null)
                 {
-                    return Plugin.TvProxy.GetChannelList(new CancellationToken()).Root.ChannelGroup.SelectMany(c => c.Channel)
+                    try
+                    {
+                        return Plugin.TvProxy.GetChannelList(new CancellationToken()).Root.ChannelGroup.SelectMany(c => c.Channel)
                         .Where(x => x.EPGID.Equals(ChannelEPGID))
                         .First().Id;
+                    }
+                    catch (Exception)
+                    {
+                        return null;
+                    }
                 }
-                else
-                {
-                    return null;
-                }
+                return null;
             }
             set
             {

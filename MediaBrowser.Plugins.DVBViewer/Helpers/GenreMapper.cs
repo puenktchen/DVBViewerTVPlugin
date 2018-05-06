@@ -99,7 +99,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Helpers
                 {
                     var genre = _movieGenres.FirstOrDefault(g => program.Overview.IndexOf(g, StringComparison.InvariantCulture) != -1);
                     if (!String.IsNullOrWhiteSpace(genre))
-                        genre = Regex.Replace(genre, @"^\w+\W\s?", String.Empty, RegexOptions.IgnoreCase);
+                        genre = Regex.Replace(genre, @"^\w+\W\s?|\s\(\w+\)$", String.Empty, RegexOptions.IgnoreCase);
 
                     program.Genres.Add(genre);
                     program.IsMovie = _movieGenres.Any(g => program.Overview.IndexOf(g, StringComparison.InvariantCulture) != -1);
@@ -109,7 +109,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Helpers
                 {
                     var genre = _sportGenres.FirstOrDefault(g => program.Overview.IndexOf(g, StringComparison.InvariantCulture) != -1);
                     if (!String.IsNullOrWhiteSpace(genre))
-                        genre = Regex.Replace(genre, @"^\w+\W\s?", String.Empty, RegexOptions.IgnoreCase);
+                        genre = Regex.Replace(genre, @"^\w+\W\s?|\s\(\w+\)$", String.Empty, RegexOptions.IgnoreCase);
 
                     program.Genres.Add(genre);
                     program.IsSports = _sportGenres.Any(g => program.Overview.IndexOf(g, StringComparison.InvariantCulture) != -1);
@@ -119,7 +119,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Helpers
                 {
                     var genre = _newsGenres.FirstOrDefault(g => program.Overview.IndexOf(g, StringComparison.InvariantCulture) != -1);
                     if (!String.IsNullOrWhiteSpace(genre))
-                        genre = Regex.Replace(genre, @"^\w+\W\s?", String.Empty, RegexOptions.IgnoreCase);
+                        genre = Regex.Replace(genre, @"^\w+\W\s?|\s\(\w+\)$", String.Empty, RegexOptions.IgnoreCase);
 
                     program.Genres.Add(genre);
                     program.IsNews = _newsGenres.Any(g => program.Overview.IndexOf(g, StringComparison.InvariantCulture) != -1);
@@ -129,7 +129,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Helpers
                 {
                     var genre = _kidsGenres.FirstOrDefault(g => program.Overview.IndexOf(g, StringComparison.InvariantCulture) != -1);
                     if (!String.IsNullOrWhiteSpace(genre))
-                        genre = Regex.Replace(genre, @"^\w+\W\s?", String.Empty, RegexOptions.IgnoreCase);
+                        genre = Regex.Replace(genre, @"^\w+\W\s?|\s\(\w+\)$", String.Empty, RegexOptions.IgnoreCase);
 
                     program.Genres.Add(genre);
                     program.IsKids = _kidsGenres.Any(g => program.Overview.IndexOf(g, StringComparison.InvariantCulture) != -1);
@@ -139,7 +139,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Helpers
                 {
                     var genre = _liveGenres.FirstOrDefault(g => program.Overview.IndexOf(g, StringComparison.InvariantCulture) != -1);
                     if (!String.IsNullOrWhiteSpace(genre))
-                        genre = Regex.Replace(genre, @"^\w+\W\s?", String.Empty, RegexOptions.IgnoreCase);
+                        genre = Regex.Replace(genre, @"^\w+\W\s?|\s\(\w+\)$", String.Empty, RegexOptions.IgnoreCase);
 
                     program.Genres.Add(genre);
                     program.IsLive = _liveGenres.Any(g => program.Overview.IndexOf(g, StringComparison.InvariantCulture) != -1);
@@ -149,7 +149,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Helpers
                 {
                     var genre = _seriesGenres.FirstOrDefault(g => program.Overview.IndexOf(g, StringComparison.InvariantCulture) != -1);
                     if (!String.IsNullOrWhiteSpace(genre))
-                        genre = Regex.Replace(genre, @"^\w+\W\s?", String.Empty, RegexOptions.IgnoreCase);
+                        genre = Regex.Replace(genre, @"^\w+\W\s?|\s\(\w+\)$", String.Empty, RegexOptions.IgnoreCase);
 
                     program.Genres.Add(genre);
                     program.IsSeries = _seriesGenres.Any(g => program.Overview.IndexOf(g, StringComparison.InvariantCulture) != -1);
@@ -185,7 +185,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Helpers
                 {
                     var genre = _movieGenres.FirstOrDefault(g => recording.Overview.IndexOf(g, StringComparison.InvariantCulture) != -1);
                     if (!String.IsNullOrWhiteSpace(genre))
-                        genre = Regex.Replace(genre, @"^\w+\W\s?", String.Empty, RegexOptions.IgnoreCase);
+                        genre = Regex.Replace(genre, @"^\w+\W\s?|\s\(\w+\)$", String.Empty, RegexOptions.IgnoreCase);
 
                     recording.Genres.Add(genre);
                     recording.IsMovie = _movieGenres.Any(g => recording.Overview.IndexOf(g, StringComparison.InvariantCulture) != -1);
@@ -195,7 +195,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Helpers
                 {
                     var genre = _sportGenres.FirstOrDefault(g => recording.Overview.IndexOf(g, StringComparison.InvariantCulture) != -1);
                     if (!String.IsNullOrWhiteSpace(genre))
-                        genre = Regex.Replace(genre, @"^\w+\W\s?", String.Empty, RegexOptions.IgnoreCase);
+                        genre = Regex.Replace(genre, @"^\w+\W\s?|\s\(\w+\)$", String.Empty, RegexOptions.IgnoreCase);
 
                     recording.Genres.Add(genre);
                     recording.IsSports = _sportGenres.Any(g => recording.Overview.IndexOf(g, StringComparison.InvariantCulture) != -1);
@@ -205,7 +205,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Helpers
                 {
                     var genre = _newsGenres.FirstOrDefault(g => recording.Overview.IndexOf(g, StringComparison.InvariantCulture) != -1);
                     if (!String.IsNullOrWhiteSpace(genre))
-                        genre = Regex.Replace(genre, @"^\w+\W\s?", String.Empty, RegexOptions.IgnoreCase);
+                        genre = Regex.Replace(genre, @"^\w+\W\s?|\s\(\w+\)$", String.Empty, RegexOptions.IgnoreCase);
 
                     recording.Genres.Add(genre);
                     recording.IsNews = _newsGenres.Any(g => recording.Overview.IndexOf(g, StringComparison.InvariantCulture) != -1);
@@ -215,7 +215,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Helpers
                 {
                     var genre = _kidsGenres.FirstOrDefault(g => recording.Overview.IndexOf(g, StringComparison.InvariantCulture) != -1);
                     if (!String.IsNullOrWhiteSpace(genre))
-                        genre = Regex.Replace(genre, @"^\w+\W\s?", String.Empty, RegexOptions.IgnoreCase);
+                        genre = Regex.Replace(genre, @"^\w+\W\s?|\s\(\w+\)$", String.Empty, RegexOptions.IgnoreCase);
 
                     recording.Genres.Add(genre);
                     recording.IsKids = _kidsGenres.Any(g => recording.Overview.IndexOf(g, StringComparison.InvariantCulture) != -1);
@@ -225,7 +225,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Helpers
                 {
                     var genre = _liveGenres.FirstOrDefault(g => recording.Overview.IndexOf(g, StringComparison.InvariantCulture) != -1);
                     if (!String.IsNullOrWhiteSpace(genre))
-                        genre = Regex.Replace(genre, @"^\w+\W\s?", String.Empty, RegexOptions.IgnoreCase);
+                        genre = Regex.Replace(genre, @"^\w+\W\s?|\s\(\w+\)$", String.Empty, RegexOptions.IgnoreCase);
 
                     recording.Genres.Add(genre);
                     recording.IsLive = _liveGenres.Any(g => recording.Overview.IndexOf(g, StringComparison.InvariantCulture) != -1);
@@ -235,7 +235,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Helpers
                 {
                     var genre = _seriesGenres.FirstOrDefault(g => recording.Overview.IndexOf(g, StringComparison.InvariantCulture) != -1);
                     if (!String.IsNullOrWhiteSpace(genre))
-                        genre = Regex.Replace(genre, @"^\w+\W\s?", String.Empty, RegexOptions.IgnoreCase);
+                        genre = Regex.Replace(genre, @"^\w+\W\s?|\s\(\w+\)$", String.Empty, RegexOptions.IgnoreCase);
 
                     recording.Genres.Add(genre);
                     recording.IsSeries = _seriesGenres.Any(g => recording.Overview.IndexOf(g, StringComparison.InvariantCulture) != -1);
@@ -266,7 +266,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Helpers
                 {
                     var genre = _movieGenres.FirstOrDefault(g => timer.Overview.IndexOf(g, StringComparison.InvariantCulture) != -1);
                     if (!String.IsNullOrWhiteSpace(genre))
-                        genre = Regex.Replace(genre, @"^\w+\W\s?", String.Empty, RegexOptions.IgnoreCase);
+                        genre = Regex.Replace(genre, @"^\w+\W\s?|\s\(\w+\)$", String.Empty, RegexOptions.IgnoreCase);
 
                     timer.Genres.Add(genre);
                     timer.IsMovie = _movieGenres.Any(g => timer.Overview.IndexOf(g, StringComparison.InvariantCulture) != -1);
@@ -276,7 +276,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Helpers
                 {
                     var genre = _sportGenres.FirstOrDefault(g => timer.Overview.IndexOf(g, StringComparison.InvariantCulture) != -1);
                     if (!String.IsNullOrWhiteSpace(genre))
-                        genre = Regex.Replace(genre, @"^\w+\W\s?", String.Empty, RegexOptions.IgnoreCase);
+                        genre = Regex.Replace(genre, @"^\w+\W\s?|\s\(\w+\)$", String.Empty, RegexOptions.IgnoreCase);
 
                     timer.Genres.Add(genre);
                     timer.IsSports = _sportGenres.Any(g => timer.Overview.IndexOf(g, StringComparison.InvariantCulture) != -1);
@@ -286,7 +286,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Helpers
                 {
                     var genre = _newsGenres.FirstOrDefault(g => timer.Overview.IndexOf(g, StringComparison.InvariantCulture) != -1);
                     if (!String.IsNullOrWhiteSpace(genre))
-                        genre = Regex.Replace(genre, @"^\w+\W\s?", String.Empty, RegexOptions.IgnoreCase);
+                        genre = Regex.Replace(genre, @"^\w+\W\s?|\s\(\w+\)$", String.Empty, RegexOptions.IgnoreCase);
 
                     timer.Genres.Add(genre);
                     timer.IsNews = _newsGenres.Any(g => timer.Overview.IndexOf(g, StringComparison.InvariantCulture) != -1);
@@ -296,7 +296,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Helpers
                 {
                     var genre = _kidsGenres.FirstOrDefault(g => timer.Overview.IndexOf(g, StringComparison.InvariantCulture) != -1);
                     if (!String.IsNullOrWhiteSpace(genre))
-                        genre = Regex.Replace(genre, @"^\w+\W\s?", String.Empty, RegexOptions.IgnoreCase);
+                        genre = Regex.Replace(genre, @"^\w+\W\s?|\s\(\w+\)$", String.Empty, RegexOptions.IgnoreCase);
 
                     timer.Genres.Add(genre);
                     timer.IsKids = _kidsGenres.Any(g => timer.Overview.IndexOf(g, StringComparison.InvariantCulture) != -1);
@@ -306,7 +306,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Helpers
                 {
                     var genre = _seriesGenres.FirstOrDefault(g => timer.Overview.IndexOf(g, StringComparison.InvariantCulture) != -1);
                     if (!String.IsNullOrWhiteSpace(genre))
-                        genre = Regex.Replace(genre, @"^\w+\W\s?", String.Empty, RegexOptions.IgnoreCase);
+                        genre = Regex.Replace(genre, @"^\w+\W\s?|\s\(\w+\)$", String.Empty, RegexOptions.IgnoreCase);
 
                     timer.Genres.Add(genre);
                     timer.IsProgramSeries = _seriesGenres.Any(g => timer.Overview.IndexOf(g, StringComparison.InvariantCulture) != -1);

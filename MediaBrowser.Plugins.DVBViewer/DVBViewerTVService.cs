@@ -23,7 +23,7 @@ namespace MediaBrowser.Plugins.DVBViewer
 
         public string HomePageUrl
         {
-            get { return "http://www.dvbviewer.tv"; }
+            get { return "https://github.com/puenktchen/DVBViewerTVPlugin"; }
         }
 
         public string Name

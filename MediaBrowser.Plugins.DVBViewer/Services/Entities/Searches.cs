@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -62,14 +63,18 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
             {
                 if (Channels != null)
                 {
-                    return Plugin.TvProxy.GetChannelList(new CancellationToken()).Root.ChannelGroup.SelectMany(c => c.Channel)
+                    try
+                    {
+                        return Plugin.TvProxy.GetChannelList(new CancellationToken()).Root.ChannelGroup.SelectMany(c => c.Channel)
                         .Where(x => x.EPGID.Equals(Channels.Channel[0]))
                         .First().Id;
+                    }
+                    catch (Exception)
+                    {
+                        return null;
+                    }
                 }
-                else
-                {
-                    return null;
-                }
+                return null;
             }
             set
             {
