@@ -48,6 +48,12 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
         public string Overview { get; set; }
 
         /// <summary>
+        /// Gets or sets the EIT content.
+        /// </summary>
+        /// <value>The EIT content.</value>
+        public string EitContent { get; set; }
+
+        /// <summary>
         /// Genre of the program.
         /// </summary>
         public List<string> Genres { get; set; }

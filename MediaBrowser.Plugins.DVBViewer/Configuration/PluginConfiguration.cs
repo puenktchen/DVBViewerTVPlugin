@@ -82,6 +82,11 @@ namespace MediaBrowser.Plugins.DVBViewer.Configuration
         public String DefaultChannelGroup { get; set; }
 
         /// <summary>
+        /// Use DVBViewer genre (EIT Content Categories)
+        /// </summary>
+        public bool EitContent { get; set; }
+
+        /// <summary>
         /// The genre mappings, to map localised DVBViewer genres, to Emby categories.
         /// </summary>
         public SerializableDictionary<String, List<String>> GenreMappings { get; set; }

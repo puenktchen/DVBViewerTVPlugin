@@ -192,7 +192,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
         public string EventId { get; set; }
 
         [XmlElement("content"), DefaultValue("")]
-        public string Content { get; set; }
+        public string EitContent { get; set; }
 
         [XmlElement("charset"), DefaultValue("")]
         public string Charset { get; set; }

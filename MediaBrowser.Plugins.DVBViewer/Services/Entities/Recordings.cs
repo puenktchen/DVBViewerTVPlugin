@@ -148,6 +148,9 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
         [XmlElement("series"), DefaultValue("")]
         public string Series { get; set; }
 
+        [XmlAttribute("content")]
+        public string EitContent { get; set; }
+
         [XmlElement("image")]
         public string Image { get; set; }
 

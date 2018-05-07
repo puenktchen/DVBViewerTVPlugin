@@ -70,43 +70,50 @@
                         </div>
                     </div>
 
-                    <div is="emby-collapse" title="Program and Recording Category Options">
+                    <div is="emby-collapse" title="Program and Recording Category Mapping">
                         <div class="collapseContent">
-                            <p>Searches DVBViewer program and recording description for genre keywords and maps the show to Emby categories</p>
-                            <div class="inputContainer">
-                                <input is="emby-input" id="txtMovieGenre" name="txtMovieGenre" label="Movie genres:" />
-                                <div class="fieldDescription">
-                                    Example: Movie,Genre: Film,Action (Movie)
+                            <label class="checkboxContainer">
+                                <input is="emby-checkbox" type="checkbox" id="chkEitContent" />
+                                <span>Use DVBViewer's internal genres (EIT content) for Emby category mapping</span>
+                            </label>
+                            <div id="txtGenreMapping">
+                                <br />
+                                <p>Search DVBViewer program & recording description for genre keywords and map it to Emby categories</p>
+                                <div class="inputContainer">
+                                    <input is="emby-input" id="txtMovieGenre" name="txtMovieGenre" label="Movie genres:" />
+                                    <div class="fieldDescription">
+                                        Example: Movie,Genre: Film,Action (Movie)
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="inputContainer">
-                                <input is="emby-input" id="txtSeriesGenre" name="txtSeriesGenre" label="Series genres:" />
-                                <div class="fieldDescription">
-                                    Example: Action Series,Genre: Drama (Series),Daily Soap
+                                <div class="inputContainer">
+                                    <input is="emby-input" id="txtSeriesGenre" name="txtSeriesGenre" label="Series genres:" />
+                                    <div class="fieldDescription">
+                                        Example: Action Series,Genre: Drama (Series),Daily Soap
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="inputContainer">
-                                <input is="emby-input" id="txtSportsGenre" name="txtSportsGenre" label="Sports genres:" />
-                                <div class="fieldDescription">
-                                    Example: Sport,Football
+                                <div class="inputContainer">
+                                    <input is="emby-input" id="txtSportsGenre" name="txtSportsGenre" label="Sports genres:" />
+                                    <div class="fieldDescription">
+                                        Example: Sport,Football
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="inputContainer">
-                                <input is="emby-input" id="txtNewsGenre" name="txtNewsGenre" label="News or documentary genres:" />
-                                <div class="fieldDescription">
-                                    Example: News Report,Daily News
+                                <div class="inputContainer">
+                                    <input is="emby-input" id="txtNewsGenre" name="txtNewsGenre" label="News or documentary genres:" />
+                                    <div class="fieldDescription">
+                                        Example: News Report,Daily News
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="inputContainer">
-                                <input is="emby-input" id="txtKidsGenre" name="txtKidsGenre" label="Kids genres:" />
-                                <div class="fieldDescription">
-                                    Example: Cartoon,Genre: Animation
+                                <div class="inputContainer">
+                                    <input is="emby-input" id="txtKidsGenre" name="txtKidsGenre" label="Kids genres:" />
+                                    <div class="fieldDescription">
+                                        Example: Cartoon,Genre: Animation
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="inputContainer">
-                                <input is="emby-input" id="txtLiveGenre" name="txtLiveGenre" label="Live genres:" />
-                                <div class="fieldDescription">
-                                    Example: Live Gameshow,Genre: Live Sports
+                                <div class="inputContainer">
+                                    <input is="emby-input" id="txtLiveGenre" name="txtLiveGenre" label="Live genres:" />
+                                    <div class="fieldDescription">
+                                        Example: Live Gameshow,Genre: Live Sports
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -251,6 +258,19 @@
             };
 
 
+            $("#chkEitContent").click(function () {
+                checkEitContent();
+            });
+
+            function checkEitContent() {
+                if ($("#chkEitContent").prop('checked')) {
+                    $("#txtGenreMapping").hide();
+                } else {
+                    $("#txtGenreMapping").show();
+                };
+            };
+
+
             $("#chkEnableRecordingImport").click(function () {
                 checkEnableRecordingImport();
                 checkEnableDirectAccess();
@@ -331,6 +351,7 @@
                     $('#txtPassword', page).val(config.Password);
                     $('#chkChannelFavourites', page).checked(config.ChannelFavourites || false).checkboxradio("refresh");
                     $('#chkProgramImages', page).checked(config.ProgramImages || false).checkboxradio("refresh");
+                    $('#chkEitContent', page).checked(config.EitContent || false).checkboxradio("refresh");
                     $('#txtTimerPrePadding', page).val(config.TimerPrePadding);
                     $('#txtTimerPostPadding', page).val(config.TimerPostPadding);
                     $('#txtTimerTask', page).val(config.TimerTask);
@@ -352,6 +373,7 @@
                     checkRequiresAuthentication();
 
                     checkChannelFavourites();
+                    checkEitContent();
                     checkRequiresPathSubstitution();
 
                     loadSelects(config, page);
@@ -434,6 +456,7 @@
                     config.ChannelFavourites = $('#chkChannelFavourites', form).checked();
                     config.DefaultChannelGroup = $('#selectChannelGroup', form).val();
                     config.ProgramImages = $('#chkProgramImages', form).checked();
+                    config.EitContent = $('#chkEitContent', form).checked();
                     config.TimerPrePadding = $('#txtTimerPrePadding', form).val();
                     config.TimerPostPadding = $('#txtTimerPostPadding', form).val();
                     config.TimerTask = $('#txtTimerTask', form).val();

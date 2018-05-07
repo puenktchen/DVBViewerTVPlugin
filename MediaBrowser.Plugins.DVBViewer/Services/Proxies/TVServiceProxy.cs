@@ -133,9 +133,10 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Proxies
                     StartDate = GeneralExtensions.GetProgramTime(p.Start),
                     EndDate = GeneralExtensions.GetProgramTime(p.Stop),
                     Overview = p.Overview,
+                    Etag = p.EitContent,
                 };
 
-                if (!String.IsNullOrEmpty(p.Overview))
+                if (!String.IsNullOrEmpty(p.EitContent) || !String.IsNullOrEmpty(p.Overview))
                 {
                     genreMapper.PopulateProgramGenres(program);
                 }
@@ -187,6 +188,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Proxies
                     SeasonNumber = r.SeasonNumber,
                     Year = r.Year,
                     Overview = r.Overview,
+                    EitContent = r.EitContent,
                     SeriesTimerId = r.Series,
                     ChannelId = r.ChannelId,
                     ChannelName = r.ChannelName,
@@ -196,7 +198,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Proxies
                     Path = r.File,
                 };
 
-                if (!String.IsNullOrEmpty(r.Overview))
+                if (!String.IsNullOrEmpty(r.EitContent) || !String.IsNullOrEmpty(r.Overview))
                 {
                     genreMapper.PopulateRecordingGenres(recording);
                 }
