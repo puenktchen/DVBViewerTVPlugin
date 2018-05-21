@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Xml.Serialization;
@@ -34,7 +35,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
         public int Priority { get; set; }
 
         [XmlElement("Series")]
-        public string Series { get; set; }
+        public string Series { get; set; } = String.Empty;
 
         [XmlElement("SearchPhrase")]
         public string SearchPhrase { get; set; }
@@ -55,7 +56,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
         public int Days { get; set; }
 
         [XmlElement("Channels")]
-        public SearchChannels Channels { get; set; }
+        public SearchChannels Channels { private get; set; }
 
         public string ChannelId
         {
@@ -65,7 +66,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
                 {
                     try
                     {
-                        return Plugin.TvProxy.GetChannelList(new CancellationToken()).Root.ChannelGroup.SelectMany(c => c.Channel)
+                        return Plugin.TvProxy.GetChannelList(new CancellationToken(), "DefaultChannelGroup").Root.ChannelGroup.SelectMany(c => c.Channel)
                         .Where(x => x.EPGID.Equals(Channels.Channel[0]))
                         .First().Id;
                     }
@@ -75,10 +76,6 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
                     }
                 }
                 return null;
-            }
-            set
-            {
-                ChannelId = value;
             }
         }
     }

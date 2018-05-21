@@ -2,17 +2,15 @@
 using System.ComponentModel;
 using System.Xml.Serialization;
 
-using MediaBrowser.Plugins.DVBViewer.Helpers;
-
 namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
 {
     [XmlRoot("channels")]
     public class Channels
     {
-        [XmlElement("rtspURL"), DefaultValue("")]
+        [XmlElement("rtspURL")]
         public string RtspURL { get; set; }
 
-        [XmlElement("upnpURL"), DefaultValue("")]
+        [XmlElement("upnpURL")]
         public string UpnpURL { get; set; }
 
         [XmlElement("root")]
@@ -39,7 +37,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
 
     public class Channel
     {
-        [XmlElement("rtsp"), DefaultValue("")]
+        [XmlElement("rtsp")]
         public string Rtsp { get; set; }
 
         [XmlAttribute("nr")]
@@ -57,7 +55,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
         [XmlAttribute("ID")]
         public string Id { get; set; }
 
-        [XmlElement("logo"), DefaultValue("")]
+        [XmlElement("logo")]
         public string Logo { get; set; }
     }
 }

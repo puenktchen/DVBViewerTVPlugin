@@ -153,16 +153,23 @@
                                 <input is="emby-checkbox" type="checkbox" id="chkSkipAlreadyInLibrary" />
                                 <span>Delete timers if item is already in Emby's library</span>
                             </label>
-                            <div class="selectContainer">
+                            <div class="selectContainer" style="padding-left: 34px;">
                                 <select is="emby-select" id="selectSkipAlreadyInLibraryProfile" data-mini="true" label="Compare timers with library items by:"></select>
                             </div>
                             <label class="checkboxContainer">
                                 <input is="emby-checkbox" type="checkbox" id="chkAutoCreateTimers" />
                                 <span>
                                     Autocreates timers for episodes missing from Emby's library <a href="scheduledtasks.html" id="saveAndLeave">(Click me)</a>
-                                    <br />(For this to take affect, you have to enable download of missing episodes in your tv show libraries)
+                                    <br />(For this to take affect, you have to enable download of missing episodes in your tv show libraries.
+                                    <br />To exclude Series, Seasons or Episodes from Autotimer creation, just tag them with "NoDMS" in the metadata manager)
                                 </span>
                             </label>
+                            <div class="selectContainer" id="chkTimerChannelGroup" style="padding-left: 34px;">
+                                <select is="emby-select" id="selectTimerChannelGroup" data-mini="true" label="Timer Channel group:"></select>
+                                <div class="fieldDescription">
+                                    Select the channel group you wish to use for Autocreated Timers
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -387,12 +394,22 @@
                 fetch(ApiClient.getUrl("DVBViewerPlugin/ChannelGroups"), {
                     method: "GET",
                 }).then((resp) => resp.json()) // Transform the data into json
-                .then(function (groups) {
-                    $('#selectChannelGroup', page).html(groups.map(function (group) {
-                        var selectedText = group == config.DefaultChannelGroup ? " selected" : "";
-                        return '<option value="' + group + '"' + selectedText + '>' + group + '</option>';
-                    }));
-                });
+                    .then(function (groups) {
+                        $('#selectChannelGroup', page).html(groups.map(function (group) {
+                            var selectedText = group == config.DefaultChannelGroup ? " selected" : "";
+                            return '<option value="' + group + '"' + selectedText + '>' + group + '</option>';
+                        }));
+                    });
+
+                fetch(ApiClient.getUrl("DVBViewerPlugin/ChannelGroups"), {
+                    method: "GET",
+                }).then((resp) => resp.json()) // Transform the data into json
+                    .then(function (groups) {
+                        $('#selectTimerChannelGroup', page).html(groups.map(function (group) {
+                            var selectedText = group == config.TimerChannelGroup ? " selected" : "";
+                            return '<option value="' + group + '"' + selectedText + '>' + group + '</option>';
+                        }));
+                    });
 
                 //ApiClient.ajax({
                 //    type: "GET",
@@ -455,6 +472,7 @@
                     config.Password = $('#txtPassword', form).val();
                     config.ChannelFavourites = $('#chkChannelFavourites', form).checked();
                     config.DefaultChannelGroup = $('#selectChannelGroup', form).val();
+                    config.TimerChannelGroup = $('#selectTimerChannelGroup', form).val();
                     config.ProgramImages = $('#chkProgramImages', form).checked();
                     config.EitContent = $('#chkEitContent', form).checked();
                     config.TimerPrePadding = $('#txtTimerPrePadding', form).val();

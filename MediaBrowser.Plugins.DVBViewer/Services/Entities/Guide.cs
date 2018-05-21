@@ -23,7 +23,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
         [XmlElement("titles", IsNullable = true)]
         public Titles Titles { private get; set; }
 
-        [XmlElement("title"), DefaultValue("")]
+        [XmlElement("title")]
         public string Title { private get; set; }
 
         public string Name
@@ -36,13 +36,9 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
                 }
                 return Title;
             }
-            set
-            {
-                Name = value;
-            }
         }
 
-        int productionYear;
+        private int productionYear;
         public int? ProductionYear
         {
             get
@@ -56,17 +52,12 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
                 }
                 return null;
             }
-            set
-            {
-                ProductionYear = value;
-            }
         }
-
 
         [XmlElement("events", IsNullable = true)]
         public Events Events { private get; set; }
 
-        [XmlElement("event"), DefaultValue("")]
+        [XmlElement("event")]
         public string Event { private get; set; }
 
         public string EpisodeTitle
@@ -75,28 +66,35 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
             {
                 if (Events != null)
                 {
+                    return Events.Event;
+                }
+                return Event;
+            }
+        }
+
+        public string EpisodeTitleRegEx
+        {
+            get
+            {
+                if (Events != null)
+                {
                     if (!String.IsNullOrEmpty(Events.Event))
                     {
-                        return Regex.Replace(Events.Event, @"(^[s]?[0-9]*[e|x|\.][0-9]*[^\w]+)|(\s[\(]?[s]?[0-9]*[e|x|\.][0-9]*[\)]?$)", String.Empty, RegexOptions.IgnoreCase);
+                        return Regex.Replace(Events.Event, @"(^[(]?[s]?[0-9]*[e|x|\.][0-9]*[^\w]+)|(\s[(]?[s]?[0-9]*[e|x|\.][0-9]*[)]?$)", String.Empty, RegexOptions.IgnoreCase);
                     }
                 }
-                else
+                if (Event != null)
                 {
                     if (!String.IsNullOrEmpty(Event))
                     {
-                        return Regex.Replace(Event, @"(^[s]?[0-9]*[e|x|\.][0-9]*[^\w]+)|(\s[\(]?[s]?[0-9]*[e|x|\.][0-9]*[\)]?$)", String.Empty, RegexOptions.IgnoreCase);
+                        return Regex.Replace(Event, @"(^[(]?[s]?[0-9]*[e|x|\.][0-9]*[^\w]+)|(\s[(]?[s]?[0-9]*[e|x|\.][0-9]*[)]?$)", String.Empty, RegexOptions.IgnoreCase);
                     }
                 }
                 return null;
             }
-            set
-            {
-                EpisodeTitle = value;
-            }
         }
 
-
-        int episodeNumber;
+        private int episodeNumber;
         public int? EpisodeNumber
         {
             get
@@ -105,7 +103,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
                 {
                     if (!String.IsNullOrEmpty(Events.Event))
                     {
-                        if (Int32.TryParse(Regex.Match(Regex.Match(Events.Event, @"(?<=[s]?[0-9]+)[e|x|\.][0-9]+\s", RegexOptions.IgnoreCase).Value, @"\d+").Value, out episodeNumber))
+                        if (Int32.TryParse(Regex.Match(Regex.Match(Events.Event, @"(?<=[s]?[0-9]+)[e|x|\.][0-9]+[)]?\s|(?<=[s]?[0-9]+)[e|x|\.][0-9]+[)]?$", RegexOptions.IgnoreCase).Value, @"\d+").Value, out episodeNumber))
                         {
                             return episodeNumber;
                         }
@@ -116,7 +114,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
                 {
                     if (!String.IsNullOrEmpty(Event))
                     {
-                        if (Int32.TryParse(Regex.Match(Regex.Match(Event, @"(?<=[s]?[0-9]+)[e|x|\.][0-9]+\s", RegexOptions.IgnoreCase).Value, @"\d+").Value, out episodeNumber))
+                        if (Int32.TryParse(Regex.Match(Regex.Match(Event, @"(?<=[s]?[0-9]+)[e|x|\.][0-9]+[)]?\s|(?<=[s]?[0-9]+)[e|x|\.][0-9]+[)]?$", RegexOptions.IgnoreCase).Value, @"\d+").Value, out episodeNumber))
                         {
                             return episodeNumber;
                         }
@@ -124,13 +122,9 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
                     return null;
                 }
             }
-            set
-            {
-                EpisodeNumber = value;
-            }
         }
 
-        int seasonNumber;
+        private int seasonNumber;
         public int? SeasonNumber
         {
             get
@@ -139,7 +133,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
                 {
                     if (!String.IsNullOrEmpty(Events.Event))
                     {
-                        if (Int32.TryParse(Regex.Match(Regex.Match(Events.Event, @"[s]?[0-9]+(?=[e|x|\.][0-9]+\s)", RegexOptions.IgnoreCase).Value, @"\d+").Value, out seasonNumber))
+                        if (Int32.TryParse(Regex.Match(Regex.Match(Events.Event, @"[s]?[0-9]+(?=[e|x|\.][0-9]+[)]?\s)|[(]?[s]?[0-9]+(?=[e|x|\.][0-9]+[)]?$)", RegexOptions.IgnoreCase).Value, @"\d+").Value, out seasonNumber))
                         {
                             return seasonNumber;
                         }
@@ -150,7 +144,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
                 {
                     if (!String.IsNullOrEmpty(Event))
                     {
-                        if (Int32.TryParse(Regex.Match(Regex.Match(Event, @"[s]?[0-9]+(?=[e|x|\.][0-9]+\s)", RegexOptions.IgnoreCase).Value, @"\d+").Value, out seasonNumber))
+                        if (Int32.TryParse(Regex.Match(Regex.Match(Event, @"[s]?[0-9]+(?=[e|x|\.][0-9]+[)]?\s)|[(]?[s]?[0-9]+(?=[e|x|\.][0-9]+[)]?$)", RegexOptions.IgnoreCase).Value, @"\d+").Value, out seasonNumber))
                         {
                             return seasonNumber;
                         }
@@ -158,17 +152,12 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
                     return null;
                 }
             }
-            set
-            {
-                SeasonNumber = value;
-            }
         }
-
 
         [XmlElement("descriptions", IsNullable = true)]
         public Descriptions Descriptions { private get; set; }
 
-        [XmlElement("description"), DefaultValue("")]
+        [XmlElement("description")]
         public string Description { private get; set; }
 
         public string Overview
@@ -181,20 +170,15 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
                 }
                 return Description;
             }
-            set
-            {
-                Overview = value;
-            }
         }
 
-
-        [XmlElement("eventid"), DefaultValue("")]
+        [XmlElement("eventid")]
         public string EventId { get; set; }
 
-        [XmlElement("content"), DefaultValue("")]
+        [XmlElement("content")]
         public string EitContent { get; set; }
 
-        [XmlElement("charset"), DefaultValue("")]
+        [XmlElement("charset")]
         public string Charset { get; set; }
 
         [XmlAttribute("start")]
@@ -203,9 +187,8 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
         [XmlAttribute("stop")]
         public string Stop { get; set; }
 
-
         [XmlAttribute("channel")]
-        public string ChannelEPGID { get; set; }
+        public string ChannelEPGID { private get; set; }
 
         public string ChannelId
         {
@@ -215,7 +198,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
                 {
                     try
                     {
-                        return Plugin.TvProxy.GetChannelList(new CancellationToken()).Root.ChannelGroup.SelectMany(c => c.Channel)
+                        return Plugin.TvProxy.GetChannelList(new CancellationToken(), "DefaultChannelGroup").Root.ChannelGroup.SelectMany(c => c.Channel)
                         .Where(x => x.EPGID.Equals(ChannelEPGID))
                         .First().Id;
                     }
@@ -226,9 +209,26 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
                 }
                 return null;
             }
-            set
+        }
+
+        public string ChannelName
+        {
+            get
             {
-                ChannelId = value;
+                if (ChannelEPGID != null)
+                {
+                    try
+                    {
+                        return Plugin.TvProxy.GetChannelList(new CancellationToken(), "DefaultChannelGroup").Root.ChannelGroup.SelectMany(c => c.Channel)
+                        .Where(x => x.EPGID.Equals(ChannelEPGID))
+                        .First().Name;
+                    }
+                    catch (Exception)
+                    {
+                        return null;
+                    }
+                }
+                return null;
             }
         }
     }
@@ -241,13 +241,13 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
 
     public class Events
     {
-        [XmlElement("event"), DefaultValue("")]
+        [XmlElement("event")]
         public string Event { get; set; }
     }
 
     public class Descriptions
     {
-        [XmlElement("description"), DefaultValue("")]
+        [XmlElement("description")]
         public string Description { get; set; }
     }
 }

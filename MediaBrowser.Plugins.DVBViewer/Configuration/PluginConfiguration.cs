@@ -82,6 +82,11 @@ namespace MediaBrowser.Plugins.DVBViewer.Configuration
         public String DefaultChannelGroup { get; set; }
 
         /// <summary>
+        /// The channel group to use in Emby with Autotimers
+        /// </summary>
+        public String TimerChannelGroup { get; set; }
+
+        /// <summary>
         /// Use DVBViewer genre (EIT Content Categories)
         /// </summary>
         public bool EitContent { get; set; }

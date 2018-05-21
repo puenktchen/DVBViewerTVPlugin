@@ -85,7 +85,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Helpers
             if (!String.IsNullOrEmpty(timer.Name) && !String.IsNullOrEmpty(timer.EpisodeTitle))
             {
                 string seriesName = Regex.Replace(Regex.Split(timer.Name, @"\s\-\s").FirstOrDefault(), @"\s\W[a-zA-Z]?[0-9]{1,3}?\W$", String.Empty);
-                string episodeName = Regex.Replace(timer.EpisodeTitle, @"(^[s]?[0-9]*[e|x|\.][0-9]*[^\w]+)|(\s[\(]?[s]?[0-9]*[e|x|\.][0-9]*[\)]?$)", String.Empty, RegexOptions.IgnoreCase);
+                string episodeName = Regex.Replace(timer.EpisodeTitle, @"(^[(]?[s]?[0-9]*[e|x|\.][0-9]*[^\w]+)|(\s[(]?[s]?[0-9]*[e|x|\.][0-9]*[)]?$)", String.Empty, RegexOptions.IgnoreCase);
                 string movieName = Regex.Replace(timer.Name, @"\s\W[0-9]+\W$", String.Empty);
 
                 if (Plugin.Instance.Configuration.SkipAlreadyInLibraryProfile == "Season and Episode Numbers" && timer.EpisodeNumber.HasValue && timer.SeasonNumber.HasValue)
@@ -93,7 +93,8 @@ namespace MediaBrowser.Plugins.DVBViewer.Helpers
                     var seriesIds = _libraryManager.GetItemIds(new InternalItemsQuery
                     {
                         IncludeItemTypes = new[] { typeof(Series).Name },
-                        Name = seriesName
+                        Name = seriesName,
+                        IsVirtualItem = false,
 
                     }).ToArray();
 
@@ -109,6 +110,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Helpers
                         IndexNumber = timer.EpisodeNumber.Value,
                         AncestorIds = seriesIds,
                         IsVirtualItem = false,
+                        IsMissing = false,
                         Limit = 1
                     });
 
@@ -123,7 +125,8 @@ namespace MediaBrowser.Plugins.DVBViewer.Helpers
                     var seriesIds = _libraryManager.GetItemIds(new InternalItemsQuery
                     {
                         IncludeItemTypes = new[] { typeof(Series).Name },
-                        NameContains = seriesName
+                        Name = seriesName,
+                        IsVirtualItem = false,
 
                     }).ToArray();
 
@@ -138,6 +141,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Helpers
                         NameContains = episodeName,
                         AncestorIds = seriesIds,
                         IsVirtualItem = false,
+                        IsMissing = false,
                         Limit = 1
                     });
 
@@ -147,12 +151,13 @@ namespace MediaBrowser.Plugins.DVBViewer.Helpers
                     }
                 }
 
-                if (timer.IsMovie)
+                if (timer.IsMovie && !timer.EpisodeNumber.HasValue && !timer.SeasonNumber.HasValue)
                 {
                     var movie = _libraryManager.GetItemIds(new InternalItemsQuery
                     {
                         IncludeItemTypes = new[] { typeof(Movie).Name },
-                        NameContains = movieName
+                        NameContains = movieName,
+                        IsVirtualItem = false,
 
                     }).Select(i => i.ToString("N")).ToArray();
 

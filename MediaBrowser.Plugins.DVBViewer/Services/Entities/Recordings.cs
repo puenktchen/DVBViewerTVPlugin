@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -26,7 +25,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
         [XmlAttribute("id")]
         public string Id { get; set; }
 
-        [XmlElement("title"), DefaultValue("")]
+        [XmlElement("title")]
         public string Title { get; set; }
 
         public string Name
@@ -38,10 +37,6 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
                     return Regex.Replace(Title, @"\s\W[a-zA-Z]?[0-9]{1,3}?\W$", String.Empty);
                 }
                 return null;
-            }
-            set
-            {
-                Name = value;
             }
         }
 
@@ -55,13 +50,9 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
                 }
                 return null;
             }
-            set
-            {
-                MovieName = value;
-            }
         }
 
-        int year;
+        private int year;
         public int? Year
         {
             get
@@ -75,14 +66,9 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
                 }
                 return null;
             }
-            set
-            {
-                Year = value;
-            }
         }
 
-
-        [XmlElement("info"), DefaultValue("")]
+        [XmlElement("info")]
         public string Info { get; set; }
 
         public string EpisodeTitle
@@ -91,61 +77,48 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
             {
                 if (!String.IsNullOrEmpty(Info))
                 {
-                    return Regex.Replace(Info, @"(^[s]?[0-9]*[e|x|\.][0-9]*[^\w]+)|(\s[\(]?[s]?[0-9]*[e|x|\.][0-9]*[\)]?$)", String.Empty, RegexOptions.IgnoreCase);
+                    return Regex.Replace(Info, @"(^[(]?[s]?[0-9]*[e|x|\.][0-9]*[^\w]+)|(\s[(]?[s]?[0-9]*[e|x|\.][0-9]*[)]?$)", String.Empty, RegexOptions.IgnoreCase);
                 }
                 return null;
             }
-            set
-            {
-                EpisodeTitle = value;
-            }
         }
 
-        int episodeNumber;
+        private int episodeNumber;
         public int? EpisodeNumber
         {
             get
             {
                 if (!String.IsNullOrEmpty(Info))
                 {
-                    if (Int32.TryParse(Regex.Match(Regex.Match(Info, @"(?<=[s]?[0-9]+)[e|x|\.][0-9]+\s", RegexOptions.IgnoreCase).Value, @"\d+").Value, out episodeNumber))
+                    if (Int32.TryParse(Regex.Match(Regex.Match(Info, @"(?<=[s]?[0-9]+)[e|x|\.][0-9]+[)]?\s|(?<=[s]?[0-9]+)[e|x|\.][0-9]+[)]?$", RegexOptions.IgnoreCase).Value, @"\d+").Value, out episodeNumber))
                     {
                         return episodeNumber;
                     }
                 }
                 return null;
             }
-            set
-            {
-                EpisodeNumber = value;
-            }
         }
 
-        int seasonNumber;
+        private int seasonNumber;
         public int? SeasonNumber
         {
             get
             {
                 if (!String.IsNullOrEmpty(Info))
                 {
-                    if (Int32.TryParse(Regex.Match(Regex.Match(Info, @"[s]?[0-9]+(?=[e|x|\.][0-9]+\s)", RegexOptions.IgnoreCase).Value, @"\d+").Value, out seasonNumber))
+                    if (Int32.TryParse(Regex.Match(Regex.Match(Info, @"[s]?[0-9]+(?=[e|x|\.][0-9]+[)]?\s)|[(]?[s]?[0-9]+(?=[e|x|\.][0-9]+[)]?$)", RegexOptions.IgnoreCase).Value, @"\d+").Value, out seasonNumber))
                     {
                         return seasonNumber;
                     }
                 }
                 return null;
             }
-            set
-            {
-                SeasonNumber = value;
-            }
         }
 
-
-        [XmlElement("desc"), DefaultValue("")]
+        [XmlElement("desc")]
         public string Overview { get; set; }
 
-        [XmlElement("series"), DefaultValue("")]
+        [XmlElement("series")]
         public string Series { get; set; }
 
         [XmlAttribute("content")]
@@ -174,7 +147,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
                 {
                     try
                     {
-                        return Plugin.TvProxy.GetChannelList(new CancellationToken()).Root.ChannelGroup.SelectMany(c => c.Channel)
+                        return Plugin.TvProxy.GetChannelList(new CancellationToken(), "DefaultChannelGroup").Root.ChannelGroup.SelectMany(c => c.Channel)
                         .Where(x => x.Name.Equals(ChannelName, StringComparison.OrdinalIgnoreCase))
                         .First().Id;
                     }
@@ -184,10 +157,6 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
                     }
                 }
                 return null;
-            }
-            set
-            {
-                ChannelId = value;
             }
         }
     }
