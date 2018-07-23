@@ -169,6 +169,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Helpers
         private class TmdbMovieSearch
         {
             public int total_results { get; set; }
+            public int total_pages { get; set; }
             public List<TmdbMovieResult> results { get; set; }
         }
 

@@ -62,6 +62,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Helpers
         {
             List<Program> programs = new List<Program>();
 
+            Plugin.Logger.Info("AUTOCREATE DVBViewer TIMERS: Get missing episodes now");
             var missingEpisodes = _libraryManager.GetItemList(new InternalItemsQuery
             {
                 IncludeItemTypes = new[] { typeof(Episode).Name },
@@ -70,27 +71,33 @@ namespace MediaBrowser.Plugins.DVBViewer.Helpers
             }).Where(x => !x.Tags.Contains("NoDMS") && !x.Parent.Tags.Contains("NoDMS") && !x.Parent.Parent.Tags.Contains("NoDMS"));
 
             // Extra logging
-            //foreach (var item in missingEpisodes)
-            //{
-            //    Plugin.Logger.Info("MISSING EPISODES > Name: {0} ({1}); Tags: {2}; ParentName: {3}; ParentTags: {4}; ParentParentName: {5}; ParentParentTags: {6}", item.Name, item.IndexNumber, string.Join(",", item.Tags), item.Parent.Name, string.Join(",", item.Parent.Tags), item.Parent.Parent.Name, string.Join(",", item.Parent.Parent.Tags));
-            //}
+            if (Plugin.Instance.Configuration.EnableLogging)
+            {
+                foreach (var item in missingEpisodes)
+                {
+                    Plugin.Logger.Info("MISSING EPISODES > Series: {0}; Number: {1}.{2}; Episode: {3}", item.Parent.Parent.Name, item.Parent.IndexNumber, item.IndexNumber, item.Name);
+                }
+            }
 
+            Plugin.Logger.Info("AUTOCREATE DVBViewer TIMERS: Get timers from backend now");
             var timers = GetFromService<Timers>(cancellationToken, typeof(Timers), "api/timerlist.html?utf8=2");
 
             var channels = Plugin.TvProxy.GetChannelList(cancellationToken, "TimerChannelGroup").Root.ChannelGroup.SelectMany(c => c.Channel);
 
+            Plugin.Logger.Info("AUTOCREATE DVBViewer TIMERS: Get guide data from backend now");
             foreach (var channel in channels)
             {
                 var program = GetFromService<Guide>(cancellationToken, typeof(Guide), "api/epg.html?lvl=2&channel={0}&start={1}&end={2}", channel.EPGID, GeneralExtensions.FloatDateTime(DateTime.Now), GeneralExtensions.FloatDateTime(DateTime.Now.AddHours(72))).Program;
-                programs.AddRange(program);
+                programs.AddRange(program.Where(p => p.ChannelEPGID == channel.EPGID));
             }
 
+            Plugin.Logger.Info("AUTOCREATE DVBViewer TIMERS: Compare guide data with missing episodes now");
             foreach (var program in programs)
             {
-                if (missingEpisodes != null && !String.IsNullOrEmpty(program.Name))
+                if (missingEpisodes != null && !String.IsNullOrEmpty(program.Name) && program.SeasonNumber.HasValue && program.EpisodeNumber.HasValue)
                 {
                     // Extra logging
-                    //Plugin.Logger.Info("PROGRAM > Title: {0}; Number: {1}.{2}; Subtitle: {3}; Channel: {4}", program.Name, program.SeasonNumber, program.EpisodeNumber, program.EpisodeTitleRegEx, program.ChannelName);
+                    Plugin.Logger.Info("PROGRAM > Title: {0}; Number: {1}.{2}; Subtitle: {3}; Channel: {4}", program.Name, program.SeasonNumber, program.EpisodeNumber, program.EpisodeTitleRegEx, program.ChannelName);
 
                     foreach (var episode in missingEpisodes.Where(x =>
                     x.Parent.Parent.Name.Contains(Regex.Replace(program.Name, @"\s\W[a-zA-Z]?[0-9]{1,3}?\W$", String.Empty)) &&
@@ -123,7 +130,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Helpers
                 builder.AppendFormat("stop={0}&", GeneralExtensions.GetProgramTime(program.Stop).AddMinutes((double)Configuration.TimerPostPadding).ToLocalTime().TimeOfDay.TotalMinutes);
                 builder.AppendFormat("pre={0}&", Configuration.TimerPrePadding);
                 builder.AppendFormat("post={0}&", Configuration.TimerPostPadding);
-                builder.AppendFormat("prio={0}&", program.ChannelName.EndsWith(@" HD", true, null) || program.ChannelName.EndsWith(@"(HD)", true, null) ? 75 : 50);
+                builder.AppendFormat("prio={0}&", 49);
                 builder.AppendFormat("after={0}&", !String.IsNullOrWhiteSpace(Configuration.TimerTask) ? Configuration.TimerTask.ToUrlString() : String.Empty);
 
                 builder.Remove(builder.Length - 1, 1);

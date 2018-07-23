@@ -48,6 +48,9 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
         [XmlAttribute("PostEPG")]
         public int PostEPG { get; set; }
 
+        [XmlAttribute("Priority")]
+        public int Priority { get; set; }
+
         [XmlElement("Series")]
         public string Series { get; set; }
 

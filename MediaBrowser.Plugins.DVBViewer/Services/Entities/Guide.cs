@@ -188,7 +188,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
         public string Stop { get; set; }
 
         [XmlAttribute("channel")]
-        public string ChannelEPGID { private get; set; }
+        public string ChannelEPGID { get; set; }
 
         public string ChannelId
         {
