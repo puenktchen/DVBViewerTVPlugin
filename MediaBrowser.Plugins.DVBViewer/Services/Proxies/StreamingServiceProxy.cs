@@ -33,7 +33,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Proxies
         /// <returns></returns>
         public StreamingDetails GetLiveTvStream(CancellationToken cancellationToken, String channelId)
         {
-            var identifier = WebUtility.UrlEncode(String.Format("{0}-{1:yyyyMMddHHmmss}", channelId, DateTime.UtcNow));
+            var identifier = WebUtility.UrlEncode(String.Format("{0}-{1:yyyyMMddHHmmss}", channelId, DateTimeOffset.UtcNow));
 
             var streamingDetails = new StreamingDetails()
             {

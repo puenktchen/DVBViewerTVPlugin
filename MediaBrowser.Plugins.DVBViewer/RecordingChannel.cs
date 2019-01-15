@@ -82,7 +82,7 @@ namespace MediaBrowser.Plugins.DVBViewer
 
         public string GetCacheKey(string userId)
         {
-            var now = DateTime.UtcNow;
+            var now = DateTimeOffset.UtcNow;
 
             var values = new List<string>();
 
@@ -186,6 +186,22 @@ namespace MediaBrowser.Plugins.DVBViewer
                 return recordingGroups;
             }
 
+            /// <summary>
+            /// Optional Latest Folders
+            /// </summary>
+            /// 
+            /// if (string.Equals(query.FolderId, "latest", StringComparison.OrdinalIgnoreCase))
+            /// {
+            ///     var latestRecordings = GetChannelItems(query, i => true, cancellationToken).Result;
+            ///
+            ///     var latest = new ChannelItemResult()
+            ///     {
+            ///         Items = latestRecordings.Items.OrderByDescending(i => i.DateCreated).Take(25).ToList()
+            ///     };
+            ///
+            ///     return Task.FromResult(latest);
+            /// }
+
             if (string.Equals(query.FolderId, "tvshows", StringComparison.OrdinalIgnoreCase))
             {
                 return GetRecordingSeriesGroups(query, cancellationToken);
@@ -197,27 +213,24 @@ namespace MediaBrowser.Plugins.DVBViewer
                 return GetChannelItems(query, i => i.IsSeries && string.Equals(i.Name.GetMD5().ToString("N"), hash, StringComparison.Ordinal), cancellationToken);
             }
 
-            //// Optional Season Folders ////
-            //if (query.FolderId.StartsWith("series_", StringComparison.OrdinalIgnoreCase))
-            //{
-            //    var hash = query.FolderId.Split('_')[1];
-            //    return GetRecordingSeasonGroups(query, i => i.IsSeries && string.Equals(i.Name.GetMD5().ToString("N"), hash, StringComparison.Ordinal), cancellationToken);
-            //}
-
-            //if (query.FolderId.StartsWith("season_", StringComparison.OrdinalIgnoreCase))
-            //{
-            //    Plugin.Logger.Info("QUERY FOLDER ID SEASON: {0}", query.FolderId);
-            //    var name = query.FolderId.Split('_')[2];
-            //    var hash = query.FolderId.Split('_')[1];
-
-            //    var output = GetChannelItems(query, i => i.IsSeries && string.Equals(i.Name, name) && string.Equals(i.SeasonNumber.ToString().GetMD5().ToString("N"), hash, StringComparison.Ordinal), cancellationToken);
-            //    foreach (var item in output.Result.Items)
-            //    {
-            //        Plugin.Logger.Info("CHANNEL Name {0}; Episode {1}", item.SeriesName, item.Name);
-            //    }
-
-            //    return output;
-            //}
+            /// <summary>
+            /// Optional Season Folders
+            /// </summary>
+            /// 
+            /// if (query.FolderId.StartsWith("series_", StringComparison.OrdinalIgnoreCase))
+            /// {
+            ///     var hash = query.FolderId.Split('_')[1];
+            ///
+            ///     return GetRecordingSeasonGroups(query, i => i.IsSeries && string.Equals(i.Name.GetMD5().ToString("N"), hash, StringComparison.Ordinal), cancellationToken);
+            /// }
+            ///
+            /// if (query.FolderId.Contains("_season_"))
+            /// {
+            ///     var name = query.FolderId.Split('_')[0];
+            ///     var hash = query.FolderId.Split('_')[2];
+            ///
+            ///     return GetChannelItems(query, i => i.IsSeries && string.Equals(i.Name, name) && string.Equals(i.SeasonNumber.ToString().GetMD5().ToString("N"), hash, StringComparison.Ordinal), cancellationToken);
+            /// }
 
             if (string.Equals(query.FolderId, "movies", StringComparison.OrdinalIgnoreCase))
             {
@@ -283,16 +296,27 @@ namespace MediaBrowser.Plugins.DVBViewer
             var service = GetService();
 
             var allRecordings = await service.GetAllRecordingsAsync(cancellationToken).ConfigureAwait(false);
+
             var result = new ChannelItemResult()
             {
                 Items = new List<ChannelItemInfo>(),
             };
 
-            //var latest = allRecordings.OrderByDescending(i => i.StartDate).Take(10);
-            //if (latest != null)
-            //{
-            //    result.Items.AddRange(latest.Select(ConvertToChannelItem));
-            //}
+            /// <summary>
+            /// Optional Latest Folders
+            /// </summary>
+            /// 
+            /// if (allRecordings != null)
+            /// {
+            ///     result.Items.Add(new ChannelItemInfo
+            ///     {
+            ///         Name = "Latest",
+            ///         FolderType = ChannelFolderType.Container,
+            ///         Id = "latest",
+            ///         Type = ChannelItemType.Folder,
+            ///         ImageUrl = ChannelFolderImage("Latest")
+            ///     });
+            /// }
 
             var series = allRecordings.FirstOrDefault(i => i.IsSeries);
             if (series != null)
@@ -381,7 +405,7 @@ namespace MediaBrowser.Plugins.DVBViewer
                     FolderType = ChannelFolderType.Container,
                     Id = "others",
                     Type = ChannelItemType.Folder,
-                    ImageUrl = ChannelFolderImage("Other Shows")
+                    ImageUrl = ChannelFolderImage("Other Shows"),
                 });
             }
 
@@ -406,7 +430,9 @@ namespace MediaBrowser.Plugins.DVBViewer
             result.Items.AddRange(series.OrderBy(i => i.Key).Select(i => new ChannelItemInfo
             {
                 Name = i.Key,
+                SeriesName = i.Key,
                 FolderType = ChannelFolderType.Container,
+                //FolderType = ChannelFolderType.Series,
                 Id = "series_" + i.Key.GetMD5().ToString("N"),
                 Type = ChannelItemType.Folder,
                 ImageUrl = File.Exists(Path.Combine(pluginPath, "recordingposters", String.Join("", i.Key.Split(Path.GetInvalidFileNameChars())) + ".jpg")) ?
@@ -426,19 +452,18 @@ namespace MediaBrowser.Plugins.DVBViewer
                 Items = new List<ChannelItemInfo>(),
             };
 
-            var season = allRecordings.Where(filter)
-                .GroupBy(i => i.SeasonNumber, i => i.Name, (key, g) => new { SeasonNumber = key, Name = g.ToList() });
+            var series = allRecordings.Where(filter).Select(i => i.Name).First();
+            var seasons = allRecordings.Where(filter).GroupBy(i => i.SeasonNumber, i => i.Name, (key, g) => new { SeasonNumber = key, Name = g.ToList() });
 
-            result.Items.AddRange(season.OrderBy(i => i.SeasonNumber).Select(i => new ChannelItemInfo
+            result.Items.AddRange(seasons.OrderBy(i => i.SeasonNumber).Select(i => new ChannelItemInfo
             {
                 Name = "Season " + i.SeasonNumber,
-                FolderType = ChannelFolderType.Container,
-                Id = "season_" + i.SeasonNumber.ToString().GetMD5().ToString("N") + "_" + i.Name.First().ToString(),
+                FolderType = ChannelFolderType.Season,
+                Id = series + "_season_" + i.SeasonNumber.ToString().GetMD5().ToString("N"),
                 Type = ChannelItemType.Folder,
-                ParentIndexNumber = i.SeasonNumber,
+                IndexNumber = i.SeasonNumber,
+                SeriesName = series,
             }));
-
-            result.Items.OrderBy(i => i.Name);
 
             return result;
         }

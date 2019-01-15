@@ -80,14 +80,14 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
                 {
                     if (!String.IsNullOrEmpty(Events.Event))
                     {
-                        return Regex.Replace(Events.Event, @"(^[(]?[s]?[0-9]*[e|x|\.][0-9]*[^\w]+)|(\s[(]?[s]?[0-9]*[e|x|\.][0-9]*[)]?$)", String.Empty, RegexOptions.IgnoreCase);
+                        return Regex.Replace(Events.Event, @"(^[(]?[s]?[0-9]*[e|x|\.][0-9]*[^\w]+)|(\s[(]?[s]?[0-9]+[e|x|\.][0-9]+[)]?$)", String.Empty, RegexOptions.IgnoreCase);
                     }
                 }
                 if (Event != null)
                 {
                     if (!String.IsNullOrEmpty(Event))
                     {
-                        return Regex.Replace(Event, @"(^[(]?[s]?[0-9]*[e|x|\.][0-9]*[^\w]+)|(\s[(]?[s]?[0-9]*[e|x|\.][0-9]*[)]?$)", String.Empty, RegexOptions.IgnoreCase);
+                        return Regex.Replace(Event, @"(^[(]?[s]?[0-9]*[e|x|\.][0-9]*[^\w]+)|(\s[(]?[s]?[0-9]+[e|x|\.][0-9]+[)]?$)", String.Empty, RegexOptions.IgnoreCase);
                     }
                 }
                 return null;

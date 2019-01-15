@@ -7,68 +7,22 @@ using System.Xml.Serialization;
 
 namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
 {
-    [XmlRoot("recordings")]
-    public class Recordings
+    [XmlRoot("table")]
+    public class RecordingsDb
     {
-        [XmlElement("serverURL")]
-        public string ServerURL { get; set; }
-
-        [XmlElement("imageURL")]
-        public string ImageURL { get; set; }
-
-        [XmlElement("recording")]
-        public List<Recording> Recording { get; set; }
+        [XmlElement("row")]
+        public List<RecordingEntry> RecordingEntry { get; set; }
     }
 
-    public class Recording
+    public class RecordingEntry
     {
-        [XmlAttribute("id")]
+        [XmlElement("IDRECORD")]
         public string Id { get; set; }
 
-        [XmlElement("title")]
+        [XmlElement("TITLE")]
         public string Title { get; set; }
 
-        public string Name
-        {
-            get
-            {
-                if (!String.IsNullOrEmpty(Title))
-                {
-                    return Regex.Replace(Title, @"\s\W[a-zA-Z]?[0-9]{1,3}?\W$", String.Empty);
-                }
-                return null;
-            }
-        }
-
-        public string MovieName
-        {
-            get
-            {
-                if (!String.IsNullOrEmpty(Title))
-                {
-                    return Regex.Replace(Title, @"(?<=\S)\s\W\d{4}\W(?=$)", String.Empty);
-                }
-                return null;
-            }
-        }
-
-        private int year;
-        public int? Year
-        {
-            get
-            {
-                if (!String.IsNullOrEmpty(Title))
-                {
-                    if (Int32.TryParse((Regex.Match(Title, @"(?<=\()\d{4}(?=\)$)").Value), out year))
-                    {
-                        return year;
-                    }
-                }
-                return null;
-            }
-        }
-
-        [XmlElement("info")]
+        [XmlElement("INFO")]
         public string Info { get; set; }
 
         public string EpisodeTitle
@@ -115,28 +69,25 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
             }
         }
 
-        [XmlElement("desc")]
+        [XmlElement("DESCRIPTION")]
         public string Overview { get; set; }
 
-        [XmlElement("series")]
+        [XmlElement("SERIES")]
         public string Series { get; set; }
 
-        [XmlAttribute("content")]
+        [XmlElement("CONTENT")]
         public string EitContent { get; set; }
 
-        [XmlElement("image")]
-        public string Image { get; set; }
-
-        [XmlElement("file")]
+        [XmlElement("FILENAME")]
         public string File { get; set; }
 
-        [XmlAttribute("start")]
+        [XmlElement("start")]
         public string Start { get; set; }
 
-        [XmlAttribute("duration")]
+        [XmlElement("DURATION")]
         public string Duration { get; set; }
 
-        [XmlElement("channel")]
+        [XmlElement("CHANNEL")]
         public string ChannelName { get; set; }
 
         public string ChannelId
@@ -159,5 +110,11 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
                 return null;
             }
         }
+
+        [XmlElement("ENABLED")]
+        public int Enabled { get; set; }
+
+        [XmlElement("FOUND")]
+        public int Found { get; set; }
     }
 }

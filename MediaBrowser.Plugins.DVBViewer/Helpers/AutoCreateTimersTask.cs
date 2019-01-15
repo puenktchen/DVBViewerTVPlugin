@@ -75,7 +75,11 @@ namespace MediaBrowser.Plugins.DVBViewer.Helpers
             {
                 foreach (var item in missingEpisodes)
                 {
-                    Plugin.Logger.Info("MISSING EPISODES > Series: {0}; Number: {1}.{2}; Episode: {3}", item.Parent.Parent.Name, item.Parent.IndexNumber, item.IndexNumber, item.Name);
+                    Plugin.Logger.Info("MISSING EPISODES > Series: {0}; Number: {1}.{2}; Episode: {3}",
+                        item.Parent.Parent.Name,
+                        item.Parent.IndexNumber,
+                        item.IndexNumber,
+                        item.Name);
                 }
             }
 
@@ -87,9 +91,11 @@ namespace MediaBrowser.Plugins.DVBViewer.Helpers
             Plugin.Logger.Info("AUTOCREATE DVBViewer TIMERS: Get guide data from backend now");
             foreach (var channel in channels)
             {
-                var program = GetFromService<Guide>(cancellationToken, typeof(Guide), "api/epg.html?lvl=2&channel={0}&start={1}&end={2}", channel.EPGID, GeneralExtensions.FloatDateTime(DateTime.Now), GeneralExtensions.FloatDateTime(DateTime.Now.AddHours(72))).Program;
+                var program = GetFromService<Guide>(cancellationToken, typeof(Guide), "api/epg.html?lvl=2&channel={0}&start={1}&end={2}", channel.EPGID, GeneralExtensions.FloatDateTimeOffset(DateTimeOffset.Now), GeneralExtensions.FloatDateTimeOffset(DateTimeOffset.Now.AddHours(72))).Program;
                 programs.AddRange(program.Where(p => p.ChannelEPGID == channel.EPGID));
             }
+
+            bool refreshSchedules = false;
 
             Plugin.Logger.Info("AUTOCREATE DVBViewer TIMERS: Compare guide data with missing episodes now");
             foreach (var program in programs)
@@ -97,19 +103,30 @@ namespace MediaBrowser.Plugins.DVBViewer.Helpers
                 if (missingEpisodes != null && !String.IsNullOrEmpty(program.Name) && program.SeasonNumber.HasValue && program.EpisodeNumber.HasValue)
                 {
                     // Extra logging
-                    Plugin.Logger.Info("PROGRAM > Title: {0}; Number: {1}.{2}; Subtitle: {3}; Channel: {4}", program.Name, program.SeasonNumber, program.EpisodeNumber, program.EpisodeTitleRegEx, program.ChannelName);
+                    Plugin.Logger.Info("PROGRAM > Title: {0}; Number: {1}.{2}; Subtitle: {3}; Channel: {4}; ChannelId: {5}; ChannelEPGID: {6} Start: {7}",
+                        program.Name,
+                        program.SeasonNumber,
+                        program.EpisodeNumber,
+                        program.EpisodeTitleRegEx,
+                        program.ChannelName,
+                        program.ChannelId,
+                        program.ChannelEPGID, GeneralExtensions.GetProgramTime(program.Start).ToLocalTime());
 
                     foreach (var episode in missingEpisodes.Where(x =>
-                    x.Parent.Parent.Name.Contains(Regex.Replace(program.Name, @"\s\W[a-zA-Z]?[0-9]{1,3}?\W$", String.Empty)) &&
+                    x.Parent.Parent.Name.StartsWith(Regex.Replace(program.Name, @"\s\W[a-zA-Z]?[0-9]{1,3}?\W$", String.Empty), StringComparison.OrdinalIgnoreCase) &&
                     x.IndexNumber.Equals(program.EpisodeNumber) &&
                     x.ParentIndexNumber.Equals(program.SeasonNumber)))
                     {
                         CreateTimer(cancellationToken, program, timers);
+                        refreshSchedules = true;
                     }
                 }
             }
 
-            Plugin.TvProxy.RefreshSchedules(cancellationToken);
+            if (refreshSchedules)
+            {
+                Plugin.TvProxy.RefreshSchedules(cancellationToken);
+            }
         }
 
         private Task CreateTimer(CancellationToken cancellationToken, Program program, Timers timers)
@@ -135,7 +152,14 @@ namespace MediaBrowser.Plugins.DVBViewer.Helpers
 
                 builder.Remove(builder.Length - 1, 1);
 
-                Plugin.Logger.Info("Create new schedule: {0} - {1}, StartTime: {2}, EndTime: {3}, ChannelId: {4}", program.Name, program.EpisodeTitle, program.Start, program.Stop, program.ChannelId);
+                Plugin.Logger.Info("Create new schedule: {0} - {1}, StartTime: {2}, EndTime: {3}, Channel: {4}, ChannelId: {5}",
+                    program.Name,
+                    program.EpisodeTitle,
+                    GeneralExtensions.GetProgramTime(program.Start).AddMinutes(-(double)Configuration.TimerPrePadding).ToLocalTime(),
+                    GeneralExtensions.GetProgramTime(program.Stop).AddMinutes((double)Configuration.TimerPostPadding).ToLocalTime(),
+                    program.ChannelName,
+                    program.ChannelId);
+
                 return Task.FromResult(GetToService(cancellationToken, builder.ToString()));
             }
 

@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
+using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Plugins;
@@ -18,7 +20,7 @@ namespace MediaBrowser.Plugins.DVBViewer
     /// <summary>
     /// Class Plugin
     /// </summary>
-    public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
+    public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages, IHasThumbImage
     {
         public static TVServiceProxy TvProxy { get; private set; }
         public static StreamingServiceProxy StreamingProxy { get; private set; }
@@ -65,6 +67,20 @@ namespace MediaBrowser.Plugins.DVBViewer
             get
             {
                 return "DVBViewer TV Plugin to enable Live TV streaming and scheduling.";
+            }
+        }
+
+        public Stream GetThumbImage()
+        {
+            var type = GetType();
+            return type.Assembly.GetManifestResourceStream("MediaBrowser.Plugins.DVBViewer.Images.Plugin-thumb.png");
+        }
+
+        public ImageFormat ThumbImageFormat
+        {
+            get
+            {
+                return ImageFormat.Png;
             }
         }
 

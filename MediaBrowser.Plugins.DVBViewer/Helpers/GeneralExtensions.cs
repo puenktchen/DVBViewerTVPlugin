@@ -26,58 +26,58 @@ namespace MediaBrowser.Plugins.DVBViewer.Helpers
             return WebUtility.UrlEncode(value);
         }
 
-        public static String ToDateString(this DateTime datetime)
+        public static String ToDateString(this DateTimeOffset datetime)
         {
             datetime = datetime.ToLocalTime();
             var date = datetime.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture);
             return date;
         }
 
-        public static String ToTimeString(this DateTime datetime)
+        public static String ToTimeString(this DateTimeOffset datetime)
         {
             datetime = datetime.ToLocalTime();
             var time = ToUrlString(datetime.ToString("HH:mm", CultureInfo.InvariantCulture));
             return time;
         }
 
-        public static String ToDelphiDate(this DateTime date)
+        public static String ToDelphiDate(this DateTimeOffset date)
         {
             date = date.ToLocalTime();
-            var totaldays = ((int)(date - (DateTime.ParseExact("30.12.1899", "dd.MM.yyyy", CultureInfo.InvariantCulture))).TotalDays).ToString();
+            var totaldays = ((int)(date - (DateTimeOffset.ParseExact("30.12.1899", "dd.MM.yyyy", CultureInfo.InvariantCulture))).TotalDays).ToString();
             return totaldays;
         }
 
-        public static String ToDelphiTime(this DateTime time)
+        public static String ToDelphiTime(this DateTimeOffset time)
         {
             time = time.ToLocalTime();
             var totaltime = String.Format("{0:0.00000000}", (time.Hour * 60 + time.Minute) / (24d * 60d)).Remove(0, 2);
             return totaltime;
         }
 
-        public static String FloatDateTime(this DateTime value)
+        public static String FloatDateTimeOffset(this DateTimeOffset value)
         {
             string totaldays = ToDelphiDate(value);
             string totaltime = ToDelphiTime(value);
             return String.Format("{0}.{1}", totaldays, totaltime);
         }
 
-        public static DateTime GetProgramTime(this String value)
+        public static DateTimeOffset GetProgramTime(this String value)
         {
-            return DateTime.ParseExact(value, "yyyyMMddHHmmss", CultureInfo.InvariantCulture).ToUniversalTime();
+            return DateTimeOffset.ParseExact(value, "yyyyMMddHHmmss", CultureInfo.InvariantCulture).ToUniversalTime();
         }
 
-        public static DateTime GetScheduleTime(this String date, String time)
+        public static DateTimeOffset GetScheduleTime(this String date, String time)
         {
-            var timerDate = DateTime.ParseExact(date, "dd.MM.yyyy", CultureInfo.InvariantCulture).ToUniversalTime();
+            var timerDate = DateTimeOffset.ParseExact(date, "dd.MM.yyyy", CultureInfo.InvariantCulture).ToUniversalTime();
             var timerTime = time.Split(':');
             var totalSeconds = int.Parse(timerTime[0]) * 3600d + int.Parse(timerTime[1]) * 60d + int.Parse(timerTime[2]);
             var scheduleTime = timerDate.AddSeconds(totalSeconds);
             return scheduleTime;
         }
 
-        public static DateTime GetSearchTime(this String time)
+        public static DateTimeOffset GetSearchTime(this String time)
         {
-            var searchTime = DateTime.ParseExact(time, "HH:mm", CultureInfo.InvariantCulture).ToUniversalTime();
+            var searchTime = DateTimeOffset.ParseExact(time, "HH:mm", CultureInfo.InvariantCulture).ToUniversalTime();
             return searchTime;
         }
 

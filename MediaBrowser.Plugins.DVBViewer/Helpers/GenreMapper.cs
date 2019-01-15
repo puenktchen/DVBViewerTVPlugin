@@ -106,12 +106,12 @@ namespace MediaBrowser.Plugins.DVBViewer.Helpers
         {
             if (program != null && program.Etag != null && _configuration.EitContent)
             {
-                program.IsMovie = _eitMovieContent.Any(c => program.Etag.Contains(c));
-                program.IsSports = _eitSportContent.Any(c => program.Etag.Contains(c));
-                program.IsNews = _eitNewsContent.Any(c => program.Etag.Contains(c));
-                program.IsKids = _eitKidsContent.Any(c => program.Etag.Contains(c));
-                program.IsLive = _eitLiveContent.Any(c => program.Etag.Contains(c));
-                program.IsSeries = _eitSeriesContent.Any(c => program.Etag.Contains(c));
+                program.IsMovie = _eitMovieContent.Any(c => program.Etag.Equals(c));
+                program.IsSports = _eitSportContent.Any(c => program.Etag.Equals(c));
+                program.IsNews = _eitNewsContent.Any(c => program.Etag.Equals(c));
+                program.IsKids = _eitKidsContent.Any(c => program.Etag.Equals(c));
+                program.IsLive = _eitLiveContent.Any(c => program.Etag.Equals(c));
+                program.IsSeries = _eitSeriesContent.Any(c => program.Etag.Equals(c));
 
                 if (program.IsSeries)
                 {
