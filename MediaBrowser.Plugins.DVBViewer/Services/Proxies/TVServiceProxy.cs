@@ -269,7 +269,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Proxies
                     recording.TmdbPoster = Path.Combine(pluginPath, "recordingposters", String.Join("", recording.Name.Split(Path.GetInvalidFileNameChars())) + ".jpg");
                 }
 
-                //Plugin.Logger.Info("RECORDING > Title: {0}, SubTitle: {1}, Series: {2}, Id: {3}, status: {4}", r.Name, r.EpisodeTitle, r.Series, r.Id, recording.Status);
+                Plugin.Logger.Info("RECORDING > Title: {0}, SubTitle: {1}, Series: {2}, Id: {3}, status: {4}", r.Name, r.EpisodeTitle, r.Series, r.Id, recording.Status);
                 return recording;
             });
         }
@@ -632,7 +632,6 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Proxies
             result = Task.FromResult(GetToService(cancellationToken, "tasks.html?task=AutoTimer&aktion=tasks"));
 
             if (result.IsCompleted)
-                Plugin.Logger.Info("HTTP STATUS CODE: {0}", result.ToString());
                 RefreshSchedules(cancellationToken);
 
             return result;
