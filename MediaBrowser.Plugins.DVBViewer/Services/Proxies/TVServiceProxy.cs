@@ -221,7 +221,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Proxies
                     Path = r.File,
                 };
 
-                if (!String.IsNullOrEmpty(r.EitContent) || !String.IsNullOrEmpty(r.Overview))
+                if (Configuration.RecGenreMapping && (!String.IsNullOrEmpty(r.EitContent) || !String.IsNullOrEmpty(r.Overview)))
                 {
                     genreMapper.PopulateRecordingGenres(recording);
                 }

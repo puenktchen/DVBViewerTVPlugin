@@ -70,9 +70,16 @@ namespace MediaBrowser.Plugins.DVBViewer.Helpers
 
             bool refreshSchedules = false;
 
-            foreach (var timer in timers.Where(x => x.Status.Equals(Model.LiveTv.RecordingStatus.New) && x.Priority.Equals(49)))
+            foreach (var timer in timers.Where(x => x.Status.Equals(Model.LiveTv.RecordingStatus.New)))
             {
-                if (IsAlreadyInRecordingsDb(timer, recordings) || IsAlreadyInLibrary(timer))
+                if (!String.IsNullOrEmpty(timer.SeriesTimerId) && String.IsNullOrEmpty(timer.ProgramId))
+                {
+                    Task.FromResult(GetToService(cancellationToken, "api/timerdelete.html?id={0}", timer.Id));
+                    Task.FromResult(GetToService(cancellationToken, "api/tasks.html?task=AutoTimer"));
+                    refreshSchedules = true;
+                }
+
+                if (timer.Priority.Equals(49) && (IsAlreadyInRecordingsDb(timer, recordings) || IsAlreadyInLibrary(timer)))
                 {
                     Plugin.Logger.Info("Cancel Schedule: \"{0} - {1}\" already exists in database, trying cancel now", timer.Name, timer.EpisodeTitle);
                     Task.FromResult(GetToService(cancellationToken, "api/timeredit.html?id={0}&enable=0", timer.Id));
@@ -88,9 +95,25 @@ namespace MediaBrowser.Plugins.DVBViewer.Helpers
 
         private bool IsAlreadyInRecordingsDb(TimerInfo timer, RecordingsDb recordings)
         {
-            if (recordings.RecordingEntry.Any(r => r.Title.Equals(timer.Name) && r.EpisodeTitle.Equals(timer.EpisodeTitle)))
+            if (!String.IsNullOrEmpty(timer.Name))
             {
-                return true;
+                if (Plugin.Instance.Configuration.SkipAlreadyInLibraryProfile == "Season and Episode Numbers" && timer.EpisodeNumber.HasValue && timer.SeasonNumber.HasValue)
+                {
+                    if (recordings.RecordingEntry.Any(r => r.Title.Equals(timer.Name) && r.SeasonNumber.Equals(timer.SeasonNumber) && r.EpisodeNumber.Equals(timer.EpisodeNumber)))
+                    {
+                        return true;
+                    }
+                }
+
+                if (Plugin.Instance.Configuration.SkipAlreadyInLibraryProfile == "Episode Name" && !string.IsNullOrWhiteSpace(timer.EpisodeTitle))
+                {
+                    if (recordings.RecordingEntry.Any(r => r.Title.Equals(timer.Name) && r.EpisodeTitle.Equals(timer.EpisodeTitle)))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
             }
 
             return false;
@@ -98,7 +121,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Helpers
 
         private bool IsAlreadyInLibrary(TimerInfo timer)
         {
-            if (!String.IsNullOrEmpty(timer.Name) && !String.IsNullOrEmpty(timer.EpisodeTitle))
+            if (!String.IsNullOrEmpty(timer.Name))
             {
                 if (Plugin.Instance.Configuration.SkipAlreadyInLibraryProfile == "Season and Episode Numbers" && timer.EpisodeNumber.HasValue && timer.SeasonNumber.HasValue)
                 {

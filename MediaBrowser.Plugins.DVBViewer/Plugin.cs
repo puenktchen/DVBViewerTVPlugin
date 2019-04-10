@@ -73,7 +73,7 @@ namespace MediaBrowser.Plugins.DVBViewer
         public Stream GetThumbImage()
         {
             var type = GetType();
-            return type.Assembly.GetManifestResourceStream("MediaBrowser.Plugins.DVBViewer.Images.Plugin-thumb.png");
+            return type.Assembly.GetManifestResourceStream(type.Namespace + ".thumb.png");
         }
 
         public ImageFormat ThumbImageFormat

@@ -56,7 +56,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
         public int Days { get; set; }
 
         [XmlElement("Channels")]
-        public SearchChannels Channels { private get; set; }
+        public SearchChannels Channels { get; set; }
 
         public string ChannelId
         {

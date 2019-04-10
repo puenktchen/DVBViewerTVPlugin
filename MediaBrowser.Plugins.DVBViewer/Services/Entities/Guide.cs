@@ -21,10 +21,10 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
     public class Program
     {
         [XmlElement("titles", IsNullable = true)]
-        public Titles Titles { private get; set; }
+        public Titles Titles { get; set; }
 
         [XmlElement("title")]
-        public string Title { private get; set; }
+        public string Title { get; set; }
 
         public string Name
         {
@@ -55,10 +55,10 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
         }
 
         [XmlElement("events", IsNullable = true)]
-        public Events Events { private get; set; }
+        public Events Events { get; set; }
 
         [XmlElement("event")]
-        public string Event { private get; set; }
+        public string Event { get; set; }
 
         public string EpisodeTitle
         {
@@ -155,10 +155,10 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
         }
 
         [XmlElement("descriptions", IsNullable = true)]
-        public Descriptions Descriptions { private get; set; }
+        public Descriptions Descriptions { get; set; }
 
         [XmlElement("description")]
-        public string Description { private get; set; }
+        public string Description { get; set; }
 
         public string Overview
         {

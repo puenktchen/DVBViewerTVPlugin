@@ -70,11 +70,11 @@
                         </div>
                     </div>
 
-                    <div is="emby-collapse" title="Program and Recording Category Mapping">
+                    <div is="emby-collapse" title="Program and Recording Category Options">
                         <div class="collapseContent">
                             <label class="checkboxContainer">
                                 <input is="emby-checkbox" type="checkbox" id="chkEitContent" />
-                                <span>Use DVBViewer's internal genres (EIT content) for Emby category mapping</span>
+                                <span>Use DVBViewer's internal genres (EIT content) to create Emby live tv program categories</span>
                             </label>
                             <div id="txtGenreMapping">
                                 <br />
@@ -116,6 +116,10 @@
                                     </div>
                                 </div>
                             </div>
+                            <label class="checkboxContainer">
+                                <input is="emby-checkbox" type="checkbox" id="chkRecGenreMapping" />
+                                <span>Create Recording Categories</span>
+                            </label>
                         </div>
                     </div>
 
@@ -359,6 +363,7 @@
                     $('#chkChannelFavourites', page).checked(config.ChannelFavourites || false).checkboxradio("refresh");
                     $('#chkProgramImages', page).checked(config.ProgramImages || false).checkboxradio("refresh");
                     $('#chkEitContent', page).checked(config.EitContent || false).checkboxradio("refresh");
+                    $('#chkRecGenreMapping', page).checked(config.RecGenreMapping || false).checkboxradio("refresh");
                     $('#txtTimerPrePadding', page).val(config.TimerPrePadding);
                     $('#txtTimerPostPadding', page).val(config.TimerPostPadding);
                     $('#txtTimerTask', page).val(config.TimerTask);
@@ -475,6 +480,7 @@
                     config.TimerChannelGroup = $('#selectTimerChannelGroup', form).val();
                     config.ProgramImages = $('#chkProgramImages', form).checked();
                     config.EitContent = $('#chkEitContent', form).checked();
+                    config.RecGenreMapping = $('#chkRecGenreMapping', form).checked();
                     config.TimerPrePadding = $('#txtTimerPrePadding', form).val();
                     config.TimerPostPadding = $('#txtTimerPostPadding', form).val();
                     config.TimerTask = $('#txtTimerTask', form).val();

@@ -22,6 +22,8 @@ namespace MediaBrowser.Plugins.DVBViewer.Configuration
             MediaPortNumber = 8090;
             ChannelFavourites = true;
             ProgramImages = false;
+            EitContent = true;
+            RecGenreMapping = true;
             EnableProbing = true;
             TimerPrePadding = 5;
             TimerPostPadding = 10;
@@ -29,7 +31,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Configuration
             CheckRecordingTitle = true;
             CheckRecordingSubTitle = true;
             CheckRemovedRecording = true;
-            CheckTimerName = true;
+            CheckTimerName = false;
             EnableTimerCache = true;
 
             // Initialise this
@@ -95,6 +97,11 @@ namespace MediaBrowser.Plugins.DVBViewer.Configuration
         /// The genre mappings, to map localised DVBViewer genres, to Emby categories.
         /// </summary>
         public SerializableDictionary<String, List<String>> GenreMappings { get; set; }
+
+        /// <summary>
+        /// Use DVBViewer genre (EIT Content Categories)
+        /// </summary>
+        public bool RecGenreMapping { get; set; }
 
         /// <summary>
         /// Enable program images

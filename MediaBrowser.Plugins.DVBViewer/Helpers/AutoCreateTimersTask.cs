@@ -113,7 +113,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Helpers
                         program.ChannelEPGID, GeneralExtensions.GetProgramTime(program.Start).ToLocalTime());
 
                     foreach (var episode in missingEpisodes.Where(x =>
-                    x.Parent.Parent.Name.StartsWith(Regex.Replace(program.Name, @"\s\W[a-zA-Z]?[0-9]{1,3}?\W$", String.Empty), StringComparison.OrdinalIgnoreCase) &&
+                    Regex.Replace(x.Parent.Parent.Name, @"\s\W[a-zA-Z]?[0-9]{1,4}?\W$", String.Empty).Equals(Regex.Replace(program.Name, @"\s\W[a-zA-Z]?[0-9]{1,4}?\W$", String.Empty), StringComparison.OrdinalIgnoreCase) &&
                     x.IndexNumber.Equals(program.EpisodeNumber) &&
                     x.ParentIndexNumber.Equals(program.SeasonNumber)))
                     {

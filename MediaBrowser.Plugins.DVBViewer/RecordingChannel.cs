@@ -207,30 +207,27 @@ namespace MediaBrowser.Plugins.DVBViewer
                 return GetRecordingSeriesGroups(query, cancellationToken);
             }
 
+            //if (query.FolderId.StartsWith("series_", StringComparison.OrdinalIgnoreCase))
+            //{
+            //    var hash = query.FolderId.Split('_')[1];
+
+            //    return GetChannelItems(query, i => i.IsSeries && string.Equals(i.Name.GetMD5().ToString("N"), hash, StringComparison.Ordinal), cancellationToken);
+            //}
+
             if (query.FolderId.StartsWith("series_", StringComparison.OrdinalIgnoreCase))
             {
                 var hash = query.FolderId.Split('_')[1];
-                return GetChannelItems(query, i => i.IsSeries && string.Equals(i.Name.GetMD5().ToString("N"), hash, StringComparison.Ordinal), cancellationToken);
+            
+                return GetRecordingSeasonGroups(query, i => i.IsSeries && string.Equals(i.Name.GetMD5().ToString("N"), hash, StringComparison.Ordinal), cancellationToken);
             }
 
-            /// <summary>
-            /// Optional Season Folders
-            /// </summary>
-            /// 
-            /// if (query.FolderId.StartsWith("series_", StringComparison.OrdinalIgnoreCase))
-            /// {
-            ///     var hash = query.FolderId.Split('_')[1];
-            ///
-            ///     return GetRecordingSeasonGroups(query, i => i.IsSeries && string.Equals(i.Name.GetMD5().ToString("N"), hash, StringComparison.Ordinal), cancellationToken);
-            /// }
-            ///
-            /// if (query.FolderId.Contains("_season_"))
-            /// {
-            ///     var name = query.FolderId.Split('_')[0];
-            ///     var hash = query.FolderId.Split('_')[2];
-            ///
-            ///     return GetChannelItems(query, i => i.IsSeries && string.Equals(i.Name, name) && string.Equals(i.SeasonNumber.ToString().GetMD5().ToString("N"), hash, StringComparison.Ordinal), cancellationToken);
-            /// }
+            if (query.FolderId.Contains("_season_"))
+            {
+                var name = query.FolderId.Split('_')[0];
+                var hash = query.FolderId.Split('_')[2];
+
+                return GetChannelItems(query, i => i.IsSeries && string.Equals(i.Name, name) && string.Equals(i.SeasonNumber.ToString().GetMD5().ToString("N"), hash, StringComparison.Ordinal), cancellationToken);
+            }
 
             if (string.Equals(query.FolderId, "movies", StringComparison.OrdinalIgnoreCase))
             {
@@ -432,7 +429,6 @@ namespace MediaBrowser.Plugins.DVBViewer
                 Name = i.Key,
                 SeriesName = i.Key,
                 FolderType = ChannelFolderType.Container,
-                //FolderType = ChannelFolderType.Series,
                 Id = "series_" + i.Key.GetMD5().ToString("N"),
                 Type = ChannelItemType.Folder,
                 ImageUrl = File.Exists(Path.Combine(pluginPath, "recordingposters", String.Join("", i.Key.Split(Path.GetInvalidFileNameChars())) + ".jpg")) ?
@@ -458,7 +454,7 @@ namespace MediaBrowser.Plugins.DVBViewer
             result.Items.AddRange(seasons.OrderBy(i => i.SeasonNumber).Select(i => new ChannelItemInfo
             {
                 Name = "Season " + i.SeasonNumber,
-                FolderType = ChannelFolderType.Season,
+                FolderType = ChannelFolderType.Container,
                 Id = series + "_season_" + i.SeasonNumber.ToString().GetMD5().ToString("N"),
                 Type = ChannelItemType.Folder,
                 IndexNumber = i.SeasonNumber,
@@ -523,7 +519,7 @@ namespace MediaBrowser.Plugins.DVBViewer
                 DateModified = item.EndDate,
 
                 Type = ChannelItemType.Media,
-                ContentType = item.IsMovie ? ChannelMediaContentType.Movie : (item.IsSeries || item.EpisodeNumber != null ? ChannelMediaContentType.Episode : ChannelMediaContentType.Clip),
+                ContentType = config.RecGenreMapping ? ChannelMediaContentType.Clip : (item.IsMovie ? ChannelMediaContentType.Movie : (item.IsSeries || item.EpisodeNumber != null ? ChannelMediaContentType.Episode : ChannelMediaContentType.Clip)),
                 MediaType = item.ChannelType == ChannelType.TV ? ChannelMediaType.Video : ChannelMediaType.Audio,
                 IsLiveStream = item.Status == RecordingStatus.InProgress,
                 Etag = item.Status.ToString(),

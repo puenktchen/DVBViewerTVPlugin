@@ -55,7 +55,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
         public string Series { get; set; }
 
         [XmlElement("Channel")]
-        public TimerChannel Channel { private get; set; }
+        public TimerChannel Channel { get; set; }
 
         public string ChannelId
         {
