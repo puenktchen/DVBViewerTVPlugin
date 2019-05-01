@@ -86,7 +86,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Helpers
             Plugin.Logger.Info("AUTOCREATE DVBViewer TIMERS: Get timers from backend now");
             var timers = GetFromService<Timers>(cancellationToken, typeof(Timers), "api/timerlist.html?utf8=2");
 
-            var channels = Plugin.TvProxy.GetChannelList(cancellationToken, "TimerChannelGroup").Root.ChannelGroup.SelectMany(c => c.Channel);
+            var channels = Plugin.TvProxy.GetChannelList(cancellationToken, "TimerChannelGroup").Root.ChannelGroup.SelectMany(c => c.DMSChannel);
 
             Plugin.Logger.Info("AUTOCREATE DVBViewer TIMERS: Get guide data from backend now");
             foreach (var channel in channels)

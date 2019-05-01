@@ -43,9 +43,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Proxies
             streamingDetails.StreamIdentifier = identifier;
             streamingDetails.SourceInfo.Id = identifier;
             streamingDetails.SourceInfo.Protocol = MediaProtocol.Http;
-            streamingDetails.SourceInfo.ReadAtNativeFramerate = true;
             streamingDetails.SourceInfo.IsInfiniteStream = true;
-            streamingDetails.SourceInfo.SupportsProbing = true;
             streamingDetails.SourceInfo.Path = String.Format("http://{0}:{1}/upnp/channelstream/{2}.ts", Configuration.ApiHostName, Configuration.StreamPortNumber, channelId);
 
             return streamingDetails;
@@ -59,6 +57,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Proxies
         public String GetRecordingStream(String recordingId)
         {
             return String.Format("http://{0}:{1}/upnp/recordings/{2}.ts", Configuration.ApiHostName, Configuration.MediaPortNumber, recordingId);
+            //return String.Format("http://{0}:{1}/upnp/master.m3u8?preset=HLS%20HD%203600%20kbit&ffpreset=superfast&recfile=1&recid={2}", Configuration.ApiHostName, Configuration.ApiPortNumber, recordingId);
         }
 
         /// <summary>
@@ -81,7 +80,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Proxies
         /// </summary>
         /// <param name="channel">The channel.</param>
         /// <returns></returns>
-        public String GetChannelLogo(Channel channel)
+        public String GetChannelLogo(DMSChannel channel)
         {
             var pluginPath = Plugin.Instance.ConfigurationFilePath.Remove(Plugin.Instance.ConfigurationFilePath.Length - 4);
             var remoteUrl = String.Format("http://{0}:{1}/api/{2}", Configuration.ApiHostName, Configuration.ApiPortNumber, channel.Logo);

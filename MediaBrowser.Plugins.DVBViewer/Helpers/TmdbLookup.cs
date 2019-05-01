@@ -25,26 +25,27 @@ namespace MediaBrowser.Plugins.DVBViewer.Helpers
             _serverConfigurationManager = serverConfigurationManager;
         }
 
-        public void GetTmdbPoster(CancellationToken cancellationToken, MyRecordingInfo recording)
+        public void GetTmdbImage(CancellationToken cancellationToken, MyRecordingInfo recording)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
+            var config = Plugin.Instance.Configuration;
             var pluginPath = Plugin.Instance.ConfigurationFilePath.Remove(Plugin.Instance.ConfigurationFilePath.Length - 4);
-            var localPoster = Path.Combine(pluginPath, "recordingposters", String.Join("", recording.Name.Split(Path.GetInvalidFileNameChars())) + ".jpg");
-            var localPosterMissing = Path.Combine(pluginPath, "recordingposters", String.Join("", recording.Name.Split(Path.GetInvalidFileNameChars())) + " [missing].jpg");
+            var localImage = Path.Combine(pluginPath, "recordingposters", String.Join("", recording.Name.Split(Path.GetInvalidFileNameChars())) + ".jpg");
+            var localImageMissing = Path.Combine(pluginPath, "recordingposters", String.Join("", recording.Name.Split(Path.GetInvalidFileNameChars())) + " [missing].jpg");
 
             if (!Directory.Exists(Path.Combine(pluginPath, "recordingposters")))
             {
                 Directory.CreateDirectory(Path.Combine(pluginPath, "recordingposters"));
             }
 
-            if (recording.IsMovie && !(File.Exists(localPoster) || File.Exists(localPosterMissing)))
+            if ((recording.IsMovie || (!recording.EpisodeNumber.HasValue && (recording.EndDate - recording.StartDate) > TimeSpan.FromMinutes(70))) && !(File.Exists(localImage) || File.Exists(localImageMissing)))
             {
                 try
                 {
                     using (var tmdbMovieSearch = _httpClient.Get(new HttpRequestOptions()
                     {
-                        Url = $"https://api.themoviedb.org/3/search/movie?api_key=9dbbec013a2d32baf38ccc58006cd991&query={recording.Name}" + $"&language={_serverConfigurationManager.Configuration.PreferredMetadataLanguage}",
+                        Url = $"https://api.themoviedb.org/3/search/movie?api_key=9dbbec013a2d32baf38ccc58006cd991&query={recording.MovieName}" + $"&language={_serverConfigurationManager.Configuration.PreferredMetadataLanguage}",
                         CancellationToken = cancellationToken,
                         BufferContent = false,
                         EnableDefaultUserAgent = true,
@@ -57,30 +58,49 @@ namespace MediaBrowser.Plugins.DVBViewer.Helpers
 
                         if (movie.total_results > 0)
                         {
-                            TmdbMovieResult tmdbMovieResult = movie.results.Find(x => x.title.Equals(recording.Name) || x.original_title.Contains(recording.EpisodeTitle)) ?? movie.results.First();
+                            TmdbMovieResult tmdbMovieResult = movie.results.Find(x => x.title.Equals(recording.MovieName) || x.original_title.Contains(recording.EpisodeTitle)) ?? movie.results.First();
 
-                            if (recording.Year.HasValue)
+                            if (recording.MovieYear.HasValue)
                             {
-                                tmdbMovieResult = movie.results.Find(x => x.release_date.StartsWith(recording.Year.Value.ToString())) ?? movie.results.First();
+                                tmdbMovieResult = movie.results.Find(x => x.release_date.StartsWith(recording.MovieYear.Value.ToString())) ?? movie.results.First();
                             }
 
                             var moviePoster = tmdbMovieResult.poster_path;
+                            var movieBackdrop = tmdbMovieResult.backdrop_path;
 
-                            if (!String.IsNullOrEmpty(moviePoster))
+                            if (config.RecGenreMapping)
                             {
-                                using (WebClient client = new WebClient())
+                                if (!String.IsNullOrEmpty(moviePoster))
                                 {
-                                    client.DownloadFile(new Uri($"https://image.tmdb.org/t/p/w500{moviePoster}"), localPoster);
+                                    using (WebClient client = new WebClient())
+                                    {
+                                        client.DownloadFile(new Uri($"https://image.tmdb.org/t/p/w500{moviePoster}"), localImage);
+                                    }
+                                }
+                                else
+                                {
+                                    File.Create(localImageMissing);
                                 }
                             }
-                            else
+
+                            if (!config.RecGenreMapping)
                             {
-                                File.Create(localPosterMissing);
+                                if (!String.IsNullOrEmpty(movieBackdrop))
+                                {
+                                    using (WebClient client = new WebClient())
+                                    {
+                                        client.DownloadFile(new Uri($"https://image.tmdb.org/t/p/w500{movieBackdrop}"), localImage);
+                                    }
+                                }
+                                else
+                                {
+                                    File.Create(localImageMissing);
+                                }
                             }
                         }
                         else
                         {
-                            File.Create(localPosterMissing);
+                            File.Create(localImageMissing);
                         }
                     }
                 }
@@ -90,7 +110,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Helpers
                 }
             }
 
-            if (recording.SeasonNumber.HasValue && recording.EpisodeNumber.HasValue && !(File.Exists(localPoster) || File.Exists(localPosterMissing)))
+            if ((recording.IsSeries || recording.EpisodeNumber.HasValue) && !(File.Exists(localImage) || File.Exists(localImageMissing)))
             {
                 try
                 {
@@ -105,57 +125,48 @@ namespace MediaBrowser.Plugins.DVBViewer.Helpers
                         DecompressionMethod = CompressionMethod.Gzip
                     }).Result)
                     {
-                        //var posterUrl = string.Empty;
-
-                        //for (int i = 0; i < tvshow.results.Count; i++)
-                        //{
-                        //    TmdbTvResult tmdbTvResult = tvshow.results.ElementAt(i);
-                        //
-                        //    using (var tmdbEpisode = await _httpClient.Get(new HttpRequestOptions()
-                        //    {
-                        //        Url = $"https://api.themoviedb.org/3/tv/{tmdbTvResult.id}/season/{recording.SeasonNumber}/episode/{recording.EpisodeNumber}?api_key=9dbbec013a2d32baf38ccc58006cd991" + $"&language={_serverConfigurationManager.Configuration.UICulture}",
-                        //        CancellationToken = cancellationToken,
-                        //        BufferContent = false,
-                        //        EnableDefaultUserAgent = true,
-                        //        AcceptHeader = "application/json",
-                        //        EnableHttpCompression = true,
-                        //        DecompressionMethod = CompressionMethod.Gzip
-                        //    }).ConfigureAwait(true))
-                        //    {
-                        //        var episode = _json.DeserializeFromStream<TmdbEpisodeResult>(tmdbEpisode);
-                        //
-                        //        if (episode.name == recording.EpisodeTitle)
-                        //        {
-                        //            posterUrl = $"https://image.tmdb.org/t/p/original{tmdbTvResult.poster_path}";
-                        //            break;
-                        //        }
-                        //    }
-                        //
-                        //    Thread.Sleep(400);
-                        //}
-
                         var tvshow = _json.DeserializeFromStream<TmdbTvSearch>(tmdbTvSearch);
 
                         if (tvshow.total_results > 0)
                         {
                             TmdbTvResult tmdbTvResult = tvshow.results.Find(x => x.name.Equals(recording.Name)) ?? tvshow.results.First();
-                            var tvPoster = tmdbTvResult.poster_path;
 
-                            if (!String.IsNullOrEmpty(tvPoster))
+                            var tvPoster = tmdbTvResult.poster_path;
+                            var tvBackdrop = tmdbTvResult.backdrop_path;
+
+                            if (config.RecGenreMapping)
                             {
-                                using (WebClient client = new WebClient())
+                                if (!String.IsNullOrEmpty(tvPoster))
                                 {
-                                    client.DownloadFile(new Uri($"https://image.tmdb.org/t/p/w500{tvPoster}"), localPoster);
+                                    using (WebClient client = new WebClient())
+                                    {
+                                        client.DownloadFile(new Uri($"https://image.tmdb.org/t/p/w500{tvPoster}"), localImage);
+                                    }
+                                }
+                                else
+                                {
+                                    File.Create(localImageMissing);
                                 }
                             }
-                            else
+
+                            if (!config.RecGenreMapping)
                             {
-                                File.Create(localPosterMissing);
+                                if (!String.IsNullOrEmpty(tvBackdrop))
+                                {
+                                    using (WebClient client = new WebClient())
+                                    {
+                                        client.DownloadFile(new Uri($"https://image.tmdb.org/t/p/w500{tvBackdrop}"), localImage);
+                                    }
+                                }
+                                else
+                                {
+                                    File.Create(localImageMissing);
+                                }
                             }
                         }
                         else
                         {
-                            File.Create(localPosterMissing);
+                            File.Create(localImageMissing);
                         }
                     }
                 }

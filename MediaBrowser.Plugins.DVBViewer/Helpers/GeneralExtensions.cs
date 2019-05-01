@@ -100,24 +100,6 @@ namespace MediaBrowser.Plugins.DVBViewer.Helpers
             return name;
         }
 
-        public static String ProgramImageUrl(this String channellogo)
-        {
-            var localImage = Path.Combine(Plugin.Instance.DataFolderPath, "channelthumbs", WebUtility.UrlDecode(channellogo).Split('\\').Last());
-            return localImage;
-        }
-
-        public static String ProgramImagePosterUrl(this String channellogo)
-        {
-            var localImage = Path.Combine(Plugin.Instance.DataFolderPath, "channelthumbs", WebUtility.UrlDecode(channellogo).Split('\\').Last());
-            return Path.Combine(Plugin.Instance.DataFolderPath, "channelthumbs", Path.GetFileNameWithoutExtension(localImage) + "-poster.png");
-        }
-
-        public static String ProgramImageLandscapeUrl(this String channellogo)
-        {
-            var localImage = Path.Combine(Plugin.Instance.DataFolderPath, "channelthumbs", WebUtility.UrlDecode(channellogo).Split('\\').Last());
-            return Path.Combine(Plugin.Instance.DataFolderPath, "channelthumbs", Path.GetFileNameWithoutExtension(localImage) + "-landscape.png");
-        }
-
         public static bool HasVideoFlag (this int flag)
         {
             var binary = Convert.ToString(flag, 2);

@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -49,12 +47,12 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Proxies
         private bool refreshChannels = false;
         private object _defaultChannelLock = new object();
         private object _timerChannelLock = new object();
-        private Channels _defaultChannelCache = null;
-        private Channels _timerChannelCache = null;
+        private DMSChannels _defaultChannelCache = null;
+        private DMSChannels _timerChannelCache = null;
         private DateTimeOffset _defaultChannelExpirationTime;
         private DateTimeOffset _timerChannelExpirationTime;
 
-        public Channels GetChannelList(CancellationToken cancellationToken, string channelGroup)
+        public DMSChannels GetChannelList(CancellationToken cancellationToken, string channelGroup)
         {
             if (channelGroup == "DefaultChannelGroup")
             {
@@ -72,11 +70,11 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Proxies
 
                         if (Configuration.ChannelFavourites)
                         {
-                            _defaultChannelCache = GetFromService<Channels>(cancellationToken, typeof(Channels), "api/getchannelsxml.html?favonly=1&logo=1");
+                            _defaultChannelCache = GetFromService<DMSChannels>(cancellationToken, typeof(DMSChannels), "api/getchannelsxml.html?favonly=1&logo=1");
                         }
                         else
                         {
-                            _defaultChannelCache = GetFromService<Channels>(cancellationToken, typeof(Channels), "api/getchannelsxml.html?root={0}&logo=1", GeneralExtensions.ToUrlString(Configuration.DefaultChannelGroup));
+                            _defaultChannelCache = GetFromService<DMSChannels>(cancellationToken, typeof(DMSChannels), "api/getchannelsxml.html?root={0}&logo=1", GeneralExtensions.ToUrlString(Configuration.DefaultChannelGroup));
                         }
                     }
 
@@ -92,7 +90,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Proxies
                     {
                         _timerChannelExpirationTime = DateTimeOffset.UtcNow.AddSeconds(240);
                         Plugin.Logger.Info("AUTOCREATE DVBViewer TIMERS: Get channels for group \"{0}\" now", GeneralExtensions.ToUrlString(Configuration.TimerChannelGroup));
-                        _timerChannelCache = GetFromService<Channels>(cancellationToken, typeof(Channels), "api/getchannelsxml.html?root={0}", GeneralExtensions.ToUrlString(Configuration.TimerChannelGroup));
+                        _timerChannelCache = GetFromService<DMSChannels>(cancellationToken, typeof(DMSChannels), "api/getchannelsxml.html?root={0}", GeneralExtensions.ToUrlString(Configuration.TimerChannelGroup));
                     }
 
                     return _timerChannelCache;
@@ -106,7 +104,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Proxies
         {
             refreshChannels = true;
             var channels = GetChannelList(new CancellationToken(), "DefaultChannelGroup");
-            IEnumerable<Channel> channel = channels.Root.ChannelGroup.SelectMany(c => c.Channel);
+            IEnumerable<DMSChannel> channel = channels.Root.ChannelGroup.SelectMany(c => c.DMSChannel);
 
             Plugin.Logger.Info("Found overall channels: {0}", channel.Count());
             return channel.Select((c, index) =>    
@@ -132,7 +130,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Proxies
         public IEnumerable<ProgramInfo> GetPrograms(CancellationToken cancellationToken, string channelId, DateTimeOffset startDateUtc, DateTimeOffset endDateUtc)
         {
             var pluginPath = Plugin.Instance.ConfigurationFilePath.Remove(Plugin.Instance.ConfigurationFilePath.Length - 4);
-            var channel = GetChannelList(new CancellationToken(), "DefaultChannelGroup").Root.ChannelGroup.SelectMany(c => c.Channel).Where(c => c.Id == channelId).FirstOrDefault();
+            var channel = GetChannelList(new CancellationToken(), "DefaultChannelGroup").Root.ChannelGroup.SelectMany(c => c.DMSChannel).Where(c => c.Id == channelId).FirstOrDefault();
             var response = GetFromService<Guide>(cancellationToken, typeof(Guide),
                 "api/epg.html?lvl=2&channel={0}&start={1}&end={2}",
                 channel.EPGID,
@@ -188,7 +186,26 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Proxies
             });
         }
 
-        public IEnumerable<MyRecordingInfo> GetRecordings(CancellationToken cancellationToken)
+        public bool refreshRecordings { get; set; }
+        private object _recordingsLock = new object();
+        private List<MyRecordingInfo> _recordingsCache = null;
+
+        public IEnumerable<MyRecordingInfo> GetRecordingsFromMemory(CancellationToken cancellationToken)
+        {
+            lock (_recordingsLock)
+            {
+                if (_recordingsCache == null || refreshRecordings)
+                {
+                    Plugin.Logger.Info("Writing recordings to memory cache");
+                    _recordingsCache = GetRecordings(cancellationToken).ToList();
+                    refreshRecordings = false;
+                }
+                Plugin.Logger.Info("Return recordings from memory cache");
+                return _recordingsCache;
+            }
+        }
+
+        private IEnumerable<MyRecordingInfo> GetRecordings(CancellationToken cancellationToken)
         {
             var pluginPath = Plugin.Instance.ConfigurationFilePath.Remove(Plugin.Instance.ConfigurationFilePath.Length - 4);
             var localPath = String.Format("{0}", Configuration.LocalFilePath);
@@ -196,7 +213,6 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Proxies
             var genreMapper = new GenreMapper(Plugin.Instance.Configuration);
             var lastName = string.Empty;
 
-            var schedules = GetFromService<Timers>(cancellationToken, typeof(Timers), "api/timerlist.html?utf8=2");
             var response = GetFromService<Recordings>(cancellationToken, typeof(Recordings), "api/recordings.html?utf8=1&images=1");
 
             Plugin.Logger.Info("Found overall Recordings: {0} ", response.Recording.Count());
@@ -206,10 +222,12 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Proxies
                 {
                     Id = r.Id,
                     Name = r.Name,
+                    MovieName = r.MovieName,
+                    MovieYear = r.Year,
                     EpisodeTitle = r.EpisodeTitle,
                     EpisodeNumber = r.EpisodeNumber,
                     SeasonNumber = r.SeasonNumber,
-                    Year = r.Year,
+                    CombinedName = r.CombinedName,
                     Overview = r.Overview,
                     EitContent = r.EitContent,
                     SeriesTimerId = r.Series,
@@ -229,13 +247,14 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Proxies
                 if (recording.IsMovie)
                 {
                     recording.Name = r.MovieName;
+                    recording.Year = r.Year;
                 }
 
                 if ((recording.StartDate <= DateTimeOffset.Now.ToUniversalTime()) && (recording.EndDate >= DateTimeOffset.Now.ToUniversalTime()))
                 {
-                    var timers = schedules.Timer.Where(t => GeneralExtensions.GetScheduleTime(t.Date, t.Start).AddMinutes(t.PreEPG) == recording.StartDate && t.Recording == "-1").FirstOrDefault();
+                    var timer = GetFromService<Timers>(cancellationToken, typeof(Timers), "api/timerlist.html?recid={0}&utf8=2", recording.Id).Timer.FirstOrDefault();
 
-                    if (timers != null)
+                    if (timer != null && timer.Recording == "-1")
                     {
                         recording.Status = RecordingStatus.InProgress;
                     }
@@ -259,24 +278,20 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Proxies
                 {
                     if (recording.Name != lastName)
                     {
-                        _tmdbLookup.GetTmdbPoster(cancellationToken, recording);
+                        _tmdbLookup.GetTmdbImage(cancellationToken, recording);
                     }
                     lastName = recording.Name;
+
+                    if (File.Exists(Path.Combine(pluginPath, "recordingposters", String.Join("", recording.Name.Split(Path.GetInvalidFileNameChars())) + ".jpg")))
+                    {
+                        recording.TmdbImage = Path.Combine(pluginPath, "recordingposters", String.Join("", recording.Name.Split(Path.GetInvalidFileNameChars())) + ".jpg");
+                    }
                 }
 
-                if (File.Exists(Path.Combine(pluginPath, "recordingposters", String.Join("", recording.Name.Split(Path.GetInvalidFileNameChars())) + ".jpg")))
-                {
-                    recording.TmdbPoster = Path.Combine(pluginPath, "recordingposters", String.Join("", recording.Name.Split(Path.GetInvalidFileNameChars())) + ".jpg");
-                }
-
-                Plugin.Logger.Info("RECORDING > Title: {0}, SubTitle: {1}, Series: {2}, Id: {3}, status: {4}", r.Name, r.EpisodeTitle, r.Series, r.Id, recording.Status);
+                Plugin.Logger.Info("RECORDING > Title: {0}, SubTitle: {1}, Series: {2}, Id: {3}, Status: {4}", r.Name, r.EpisodeTitle, r.Series, r.Id, recording.Status);
                 return recording;
             });
         }
-
-        private bool refreshTimers { get; set; }
-        private object _timerLock = new object();
-        private List<TimerInfo> _timerCache = null;
 
         public void RefreshSchedules(CancellationToken cancellationToken)
         {
@@ -288,6 +303,10 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Proxies
             GetSeriesSchedulesFromMemory(cancellationToken);
             GetSchedulesFromMemory(cancellationToken);
         }
+
+        private bool refreshTimers { get; set; }
+        private object _timerLock = new object();
+        private List<TimerInfo> _timerCache = null;
 
         public IEnumerable<TimerInfo> GetSchedulesFromMemory(CancellationToken cancellationToken)
         {
@@ -304,9 +323,9 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Proxies
             }
         }
 
-        public IEnumerable<TimerInfo> GetSchedules(CancellationToken cancellationToken)
+        private IEnumerable<TimerInfo> GetSchedules(CancellationToken cancellationToken)
         {
-            var channels = GetChannelList(new CancellationToken(), "DefaultChannelGroup").Root.ChannelGroup.SelectMany(c => c.Channel);
+            var channels = GetChannelList(new CancellationToken(), "DefaultChannelGroup").Root.ChannelGroup.SelectMany(c => c.DMSChannel);
             var response = GetFromService<Timers>(cancellationToken, typeof(Timers), "api/timerlist.html?utf8=2");
 
             Plugin.Logger.Info("Found overall one time schedules: {0} ", response.Timer.Where(t => String.IsNullOrEmpty(t.Days)).Count());
@@ -393,7 +412,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Proxies
             }
         }
 
-        public IEnumerable<SeriesTimerInfo> GetSeriesSchedules(CancellationToken cancellationToken)
+        private IEnumerable<SeriesTimerInfo> GetSeriesSchedules(CancellationToken cancellationToken)
         {
             var response = GetFromService<Searches>(cancellationToken, typeof(Searches), "api/searchlist.html").Search.Where(t => t.AutoRecording.Equals("-1")).ToList();
 
@@ -443,8 +462,8 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Proxies
             if (starttime == "00:00" && endtime == "23:59")
             {
                 seriesTimerInfo.RecordAnyTime = true;
-                seriesTimerInfo.StartDate = DateTimeOffset.Now.AddHours(-1).ToUniversalTime();
-                seriesTimerInfo.EndDate = DateTimeOffset.Now.AddHours(1).ToUniversalTime();
+                seriesTimerInfo.StartDate = new DateTimeOffset(new DateTime (DateTimeOffset.Now.Year, DateTimeOffset.Now.Month, DateTimeOffset.Now.Day, DateTimeOffset.Now.Hour, 0, 0)).ToUniversalTime();
+                seriesTimerInfo.EndDate = seriesTimerInfo.StartDate.AddMinutes(59);
             }
 
             TimerDays days = (TimerDays)timerdays;
@@ -486,7 +505,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Proxies
 
         public Task CreateSchedule(CancellationToken cancellationToken, TimerInfo timer)
         {
-            var channels = GetChannelList(new CancellationToken(), "DefaultChannelGroup").Root.ChannelGroup.SelectMany(c => c.Channel);
+            var channels = GetChannelList(new CancellationToken(), "DefaultChannelGroup").Root.ChannelGroup.SelectMany(c => c.DMSChannel);
             var guide = GetFromService<Guide>(cancellationToken, typeof(Guide),
                     "api/epg.html?lvl=2&channel={0}&start={1}&end={2}",
                     channels.Where(c => c.Id == timer.ChannelId).Select(c => c.EPGID).FirstOrDefault(),
@@ -510,12 +529,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Proxies
             builder.Remove(builder.Length - 1, 1);
 
             Plugin.Logger.Info("CREATE SCHEDULE > Name: {0}, StartTime: {1}, EndTime: {2}, ChannelId: {3}", timer.Name, timer.StartDate.ToLocalTime(), timer.EndDate.ToLocalTime(), timer.ChannelId);
-            var result = Task.FromResult(GetToService(cancellationToken, builder.ToString()));
-
-            if (result.IsCompleted)
-                RefreshSchedules(cancellationToken);
-
-            return result;
+            return Task.FromResult(GetToService(cancellationToken, builder.ToString()));
         }
 
         public Task ChangeSchedule(CancellationToken cancellationToken, TimerInfo timer)
@@ -533,17 +547,15 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Proxies
             builder.Remove(builder.Length - 1, 1);
 
             Plugin.Logger.Info("CHANGE SCHEDULE > Name: {0}, StartTime: {1}, EndTime: {2}, ChannelId: {3}", timer.Name, timer.StartDate.ToLocalTime(), timer.EndDate.ToLocalTime(), timer.ChannelId);
-            var result = Task.FromResult(GetToService(cancellationToken, builder.ToString()));
-
-            if (result.IsCompleted)
-                RefreshSchedules(cancellationToken);
-
-            return result;
+            return Task.FromResult(GetToService(cancellationToken, builder.ToString()));
         }
 
         public Task CreateSeriesSchedule(CancellationToken cancellationToken, SeriesTimerInfo timer)
         {
-            var channels = GetChannelList(new CancellationToken(), "DefaultChannelGroup").Root.ChannelGroup.SelectMany(c => c.Channel);
+            var channels = GetChannelList(new CancellationToken(), "DefaultChannelGroup").Root.ChannelGroup.SelectMany(c => c.DMSChannel);
+
+            var roundedStartDate = new DateTimeOffset(new DateTime(timer.StartDate.ToLocalTime().Year, timer.StartDate.ToLocalTime().Month, timer.StartDate.ToLocalTime().Day, timer.StartDate.ToLocalTime().Hour, 0, 0));
+            var roundedEndDate = roundedStartDate.AddMinutes(59);
 
             var builder = new StringBuilder("api/searchadd.html?");
 
@@ -552,7 +564,9 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Proxies
             builder.AppendFormat("Series={0}&", timer.Name.ToUrlString());
             builder.AppendFormat("EPGBefore={0}&", timer.PrePaddingSeconds / 60);
             builder.AppendFormat("EPGAfter={0}&", timer.PostPaddingSeconds / 60);
+            builder.AppendFormat("CheckDup=1&");
             builder.AppendFormat("AutoRecording=1&");
+            builder.AppendFormat("Record=1&");
 
             if (!String.IsNullOrWhiteSpace(Configuration.TimerTask))
                 builder.AppendFormat("AfterProcessAction={0}&", Configuration.TimerTask.ToUrlString());
@@ -577,69 +591,38 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Proxies
             else
                 builder.AppendFormat("CheckTimer=0&");
 
-            if (!timer.RecordAnyChannel)
-            {
-                builder.AppendFormat("Channels={0}&", channels.Where(c => c.Id.Equals(timer.ChannelId)).Select(c => c.EPGID).FirstOrDefault());
-            }
-            else
-            {
-                builder.AppendFormat("Channels=&");
-            }
+            /// Overwrite Emby Defaults for Series Schedules start
 
-            if (!timer.RecordAnyTime)
-            {
-                builder.AppendFormat("StartTime={0}&", timer.StartDate.AddHours(-1).ToTimeString());
-                builder.AppendFormat("EndTime={0}&", timer.EndDate.AddHours(1).ToTimeString());
-            }
-            else
-            {
-                builder.AppendFormat("StartTime=00:00&");
-                builder.AppendFormat("EndTime=23:59&");
-            }
+            builder.AppendFormat("Priority=49&");
+            builder.AppendFormat("Channels={0}&", channels.Where(c => c.Id.Equals(timer.ChannelId)).Select(c => c.EPGID).FirstOrDefault());
+            builder.AppendFormat("StartTime={0}&EndTime={1}&", roundedStartDate.ToTimeString(), roundedEndDate.ToTimeString());
 
-            if (timer.RecordNewOnly)
-            {
-                if (timer.StartDate.ToLocalTime().DayOfWeek.Equals(DayOfWeek.Monday))
-                    builder.AppendFormat("Days=1&");
-                if (timer.StartDate.ToLocalTime().DayOfWeek.Equals(DayOfWeek.Tuesday))
-                    builder.AppendFormat("Days=2&");
-                if (timer.StartDate.ToLocalTime().DayOfWeek.Equals(DayOfWeek.Wednesday))
-                    builder.AppendFormat("Days=4&");
-                if (timer.StartDate.ToLocalTime().DayOfWeek.Equals(DayOfWeek.Thursday))
-                    builder.AppendFormat("Days=8&");
-                if (timer.StartDate.ToLocalTime().DayOfWeek.Equals(DayOfWeek.Friday))
-                    builder.AppendFormat("Days=16&");
-                if (timer.StartDate.ToLocalTime().DayOfWeek.Equals(DayOfWeek.Saturday))
-                    builder.AppendFormat("Days=32&");
-                if (timer.StartDate.ToLocalTime().DayOfWeek.Equals(DayOfWeek.Sunday))
-                    builder.AppendFormat("Days=64&");
-            }
-            else
-            {
-                builder.AppendFormat("Days=127&");
-            }
+            if (timer.StartDate.ToLocalTime().DayOfWeek.Equals(DayOfWeek.Monday))
+                builder.AppendFormat("Days=1&");
+            if (timer.StartDate.ToLocalTime().DayOfWeek.Equals(DayOfWeek.Tuesday))
+                builder.AppendFormat("Days=2&");
+            if (timer.StartDate.ToLocalTime().DayOfWeek.Equals(DayOfWeek.Wednesday))
+                builder.AppendFormat("Days=4&");
+            if (timer.StartDate.ToLocalTime().DayOfWeek.Equals(DayOfWeek.Thursday))
+                builder.AppendFormat("Days=8&");
+            if (timer.StartDate.ToLocalTime().DayOfWeek.Equals(DayOfWeek.Friday))
+                builder.AppendFormat("Days=16&");
+            if (timer.StartDate.ToLocalTime().DayOfWeek.Equals(DayOfWeek.Saturday))
+                builder.AppendFormat("Days=32&");
+            if (timer.StartDate.ToLocalTime().DayOfWeek.Equals(DayOfWeek.Sunday))
+                builder.AppendFormat("Days=64&");
 
-            if (timer.SkipEpisodesInLibrary)
-            {
-                builder.AppendFormat("Priority=49&");
-            }
+            /// Overwrite Emby Defaults for Series Schedules end
 
             builder.Remove(builder.Length - 1, 1);
 
             Plugin.Logger.Info("CREATE AUTOSEARCH > {0}", timer.Name);
-            var result = Task.FromResult(GetToService(cancellationToken, builder.ToString()));
-
-            result = Task.FromResult(GetToService(cancellationToken, "tasks.html?task=AutoTimer&aktion=tasks"));
-
-            if (result.IsCompleted)
-                RefreshSchedules(cancellationToken);
-
-            return result;
+            return Task.FromResult(GetToService(cancellationToken, builder.ToString()));
         }
 
         public Task ChangeSeriesSchedule(CancellationToken cancellationToken, SeriesTimerInfo timer)
         {
-            var channels = GetChannelList(new CancellationToken(), "DefaultChannelGroup").Root.ChannelGroup.SelectMany(c => c.Channel);
+            var channels = GetChannelList(new CancellationToken(), "DefaultChannelGroup").Root.ChannelGroup.SelectMany(c => c.DMSChannel);
 
             var builder = new StringBuilder("api/searchedit.html?");
 
@@ -647,29 +630,20 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Proxies
             builder.AppendFormat("EPGBefore={0}&", timer.PrePaddingSeconds / 60);
             builder.AppendFormat("EPGAfter={0}&", timer.PostPaddingSeconds / 60);
             builder.AppendFormat("AutoRecording=1&");
+            builder.AppendFormat("Record=1&");
 
             if (!String.IsNullOrWhiteSpace(Configuration.TimerTask))
                 builder.AppendFormat("AfterProcessAction={0}&", Configuration.TimerTask.ToUrlString());
 
             if (!timer.RecordAnyChannel)
-            {
                 builder.AppendFormat("Channels={0}&", channels.Where(c => c.Id.Equals(timer.ChannelId)).Select(c => c.EPGID).FirstOrDefault());
-            }
             else
-            {
                 builder.AppendFormat("Channels=&");
-            }
 
             if (!timer.RecordAnyTime)
-            {
-                builder.AppendFormat("StartTime={0}&", timer.StartDate.ToTimeString());
-                builder.AppendFormat("EndTime={0}&", timer.EndDate.ToTimeString());
-            }
+                builder.AppendFormat("StartTime={0}&EndTime={1}&", timer.StartDate.ToTimeString(), timer.EndDate.ToTimeString());
             else
-            {
-                builder.AppendFormat("StartTime=00:00&");
-                builder.AppendFormat("EndTime=23:59&");
-            }
+                builder.AppendFormat("StartTime=00:00&EndTime=23:59&");
 
             if (timer.RecordNewOnly)
             {
@@ -689,30 +663,17 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Proxies
                     builder.AppendFormat("Days=64&");
             }
             else
-            {
                 builder.AppendFormat("Days=127&");
-            }
 
             if (timer.SkipEpisodesInLibrary)
-            {
                 builder.AppendFormat("Priority=49&");
-            }
             else
-            {
                 builder.AppendFormat("Priority=50&");
-            }
 
             builder.Remove(builder.Length - 1, 1);
 
             Plugin.Logger.Info("CHANGE AUTOSEARCH > {0}", timer.Name);
-            var result = Task.FromResult(GetToService(cancellationToken, builder.ToString()));
-
-            GetToService(cancellationToken, "tasks.html?task=AutoTimer&aktion=tasks");
-
-            if (result.IsCompleted)
-                RefreshSchedules(cancellationToken);
-
-            return result;
+            return Task.FromResult(GetToService(cancellationToken, builder.ToString()));
         }
 
         #endregion
@@ -726,34 +687,19 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Proxies
             if (timer.Enabled != "0")
             {
                 Plugin.Logger.Info("CANCEL SCHEDULE > Name: {0}, Date: {1}, StartTime: {2}, EndTime: {3}, ChannelId: {4}", timer.Description, timer.Date, timer.Start, timer.End, timer.ChannelId);
-                var result = Task.FromResult(GetToService(cancellationToken, "api/timeredit.html?id={0}&enable=0", scheduleId));
-
-                if (result.IsCompleted)
-                    RefreshSchedules(cancellationToken);
-
-                return result;
+                return Task.FromResult(GetToService(cancellationToken, "api/timeredit.html?id={0}&enable=0", scheduleId));
             }
             else
             {
                 Plugin.Logger.Info("DELETE SCHEDULE > Id: {0}", scheduleId);
-                var result = Task.FromResult(GetToService(cancellationToken, "api/timerdelete.html?id={0}", scheduleId));
-
-                if (result.IsCompleted)
-                    RefreshSchedules(cancellationToken);
-
-                return result;
+                return Task.FromResult(GetToService(cancellationToken, "api/timerdelete.html?id={0}", scheduleId));
             }
         }
 
         public Task DeleteSeriesSchedule(CancellationToken cancellationToken, string scheduleId)
         {
             Plugin.Logger.Info("DELETE AUTOSEARCH > Id: {0}", scheduleId);
-            var result = Task.FromResult(GetToService(cancellationToken, "api/searchdelete.html?name={0}", scheduleId.ToUrlString()));
-
-            if (result.IsCompleted)
-                RefreshSchedules(cancellationToken);
-
-            return result;
+            return Task.FromResult(GetToService(cancellationToken, "api/searchdelete.html?name={0}", scheduleId.ToUrlString()));
         }
 
         public void DeleteRecording(string recordingId, CancellationToken cancellationToken)

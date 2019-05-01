@@ -1,11 +1,11 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel;
+﻿using System;
+using System.Collections.Generic;
 using System.Xml.Serialization;
 
 namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
 {
     [XmlRoot("channels")]
-    public class Channels
+    public class DMSChannels
     {
         [XmlElement("rtspURL")]
         public string RtspURL { get; set; }
@@ -29,13 +29,13 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
     public class ChannelGroup
     {
         [XmlElement("channel")]
-        public List<Channel> Channel { get; set; }
+        public List<DMSChannel> DMSChannel { get; set; }
 
         [XmlAttribute("name")]
         public string ChannelGroupName { get; set; }
     }
 
-    public class Channel
+    public class DMSChannel
     {
         [XmlElement("rtsp")]
         public string Rtsp { get; set; }

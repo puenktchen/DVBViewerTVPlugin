@@ -18,6 +18,11 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
         public string Name { get; set; }
 
         /// <summary>
+        /// Movie name of the recording.
+        /// </summary>
+        public string MovieName { get; set; }
+
+        /// <summary>
         /// Gets or sets the episode title.
         /// </summary>
         /// <value>The episode title.</value>
@@ -38,8 +43,20 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
         /// <summary>
         /// Gets or sets the year of the title.
         /// </summary>
-        /// <value>The episode number.</value>
+        /// <value>The year.</value>
         public int? Year { get; set; }
+
+        /// <summary>
+        /// Gets or sets the year of the movie.
+        /// </summary>
+        /// <value>The movie year.</value>
+        public int? MovieYear { get; set; }
+
+        /// <summary>
+        /// Gets or sets a combination Name and Title.
+        /// </summary>
+        /// <value>The combined name.</value>
+        public string CombinedName { get; set; }
 
         /// <summary>
         /// Gets or sets the overview.
@@ -149,7 +166,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
         /// Supply the poster downloaded from TMDB
         /// </summary>
         /// <value>The image path.</value>
-        public string TmdbPoster { get; set; }
+        public string TmdbImage { get; set; }
 
 
 

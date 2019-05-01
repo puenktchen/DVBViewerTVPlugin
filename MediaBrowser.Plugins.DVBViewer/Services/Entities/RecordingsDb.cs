@@ -98,7 +98,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
                 {
                     try
                     {
-                        return Plugin.TvProxy.GetChannelList(new CancellationToken(), "DefaultChannelGroup").Root.ChannelGroup.SelectMany(c => c.Channel)
+                        return Plugin.TvProxy.GetChannelList(new CancellationToken(), "DefaultChannelGroup").Root.ChannelGroup.SelectMany(c => c.DMSChannel)
                         .Where(x => x.Name.Equals(ChannelName, StringComparison.OrdinalIgnoreCase))
                         .First().Id;
                     }

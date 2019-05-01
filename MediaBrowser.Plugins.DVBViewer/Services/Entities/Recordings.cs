@@ -115,6 +115,26 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
             }
         }
 
+        public string CombinedName
+        {
+            get
+            {
+                if (!String.IsNullOrEmpty(Title))
+                {
+                    if (!String.IsNullOrEmpty(Info))
+                    {
+                        if (Title.Equals(Info, StringComparison.OrdinalIgnoreCase))
+                        {
+                            return Title;
+                        }
+                        return String.Format("{0} - {1}", Title, Info);
+                    }
+                    return Title;
+                }
+                return null;
+            }
+        }
+
         [XmlElement("desc")]
         public string Overview { get; set; }
 
@@ -147,7 +167,7 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
                 {
                     try
                     {
-                        return Plugin.TvProxy.GetChannelList(new CancellationToken(), "DefaultChannelGroup").Root.ChannelGroup.SelectMany(c => c.Channel)
+                        return Plugin.TvProxy.GetChannelList(new CancellationToken(), "DefaultChannelGroup").Root.ChannelGroup.SelectMany(c => c.DMSChannel)
                         .Where(x => x.Name.Equals(ChannelName, StringComparison.OrdinalIgnoreCase))
                         .First().Id;
                     }

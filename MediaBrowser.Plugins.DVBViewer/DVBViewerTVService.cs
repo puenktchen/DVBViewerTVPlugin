@@ -19,8 +19,6 @@ namespace MediaBrowser.Plugins.DVBViewer
     {
         private static StreamingDetails _currentStreamDetails;
 
-        public DateTimeOffset LastRecordingChange = DateTimeOffset.MinValue;
-
         public string HomePageUrl
         {
             get { return "https://github.com/puenktchen/DVBViewerTVPlugin"; }
@@ -125,7 +123,7 @@ namespace MediaBrowser.Plugins.DVBViewer
         {
             if (Plugin.Instance.Configuration.EnableRecordingImport)
             {
-                return Task.FromResult(Plugin.TvProxy.GetRecordings(cancellationToken));
+                return Task.FromResult(Plugin.TvProxy.GetRecordingsFromMemory(cancellationToken));
             }
             throw new NotImplementedException();
         }
@@ -138,7 +136,7 @@ namespace MediaBrowser.Plugins.DVBViewer
         public Task DeleteRecordingAsync(string recordingId, CancellationToken cancellationToken)
         {
             Plugin.TvProxy.DeleteRecording(recordingId, cancellationToken);
-            LastRecordingChange = DateTimeOffset.UtcNow;
+            Plugin.TvProxy.refreshRecordings = true;
             return Task.Delay(0, cancellationToken);
         }
 
@@ -176,21 +174,24 @@ namespace MediaBrowser.Plugins.DVBViewer
         public Task CreateTimerAsync(TimerInfo info, CancellationToken cancellationToken)
         {
             var result = Task.FromResult(Plugin.TvProxy.CreateSchedule(cancellationToken, info));
-            LastRecordingChange = DateTimeOffset.UtcNow;
+            Plugin.TvProxy.RefreshSchedules(cancellationToken);
+            Plugin.TvProxy.refreshRecordings = true;
             return result;
         }
 
         public Task UpdateTimerAsync(TimerInfo info, CancellationToken cancellationToken)
         {
             var result = Task.FromResult(Plugin.TvProxy.ChangeSchedule(cancellationToken, info));
-            LastRecordingChange = DateTimeOffset.UtcNow;
+            Plugin.TvProxy.RefreshSchedules(cancellationToken);
+            Plugin.TvProxy.refreshRecordings = true;
             return result;
         }
 
         public Task CancelTimerAsync(string timerId, CancellationToken cancellationToken)
         {
             var result = Task.FromResult(Plugin.TvProxy.DeleteSchedule(cancellationToken, timerId));
-            LastRecordingChange = DateTimeOffset.UtcNow;
+            Plugin.TvProxy.RefreshSchedules(cancellationToken);
+            Plugin.TvProxy.refreshRecordings = true;
             return result;
         }
 
@@ -201,17 +202,23 @@ namespace MediaBrowser.Plugins.DVBViewer
 
         public Task CreateSeriesTimerAsync(SeriesTimerInfo info, CancellationToken cancellationToken)
         {
-            return Task.FromResult(Plugin.TvProxy.CreateSeriesSchedule(cancellationToken, info));
+            var result = Task.FromResult(Plugin.TvProxy.CreateSeriesSchedule(cancellationToken, info));
+            Plugin.TvProxy.RefreshSchedules(cancellationToken);
+            return result;
         }
 
         public Task UpdateSeriesTimerAsync(SeriesTimerInfo info, CancellationToken cancellationToken)
         {
-            return Task.FromResult(Plugin.TvProxy.ChangeSeriesSchedule(cancellationToken, info));
+            var result = Task.FromResult(Plugin.TvProxy.ChangeSeriesSchedule(cancellationToken, info));
+            Plugin.TvProxy.RefreshSchedules(cancellationToken);
+            return result;
         }
 
         public Task CancelSeriesTimerAsync(string timerId, CancellationToken cancellationToken)
         {
-            return Task.FromResult(Plugin.TvProxy.DeleteSeriesSchedule(cancellationToken, timerId));
+            var result = Task.FromResult(Plugin.TvProxy.DeleteSeriesSchedule(cancellationToken, timerId));
+            Plugin.TvProxy.RefreshSchedules(cancellationToken);
+            return result;
         }
 
     #endregion

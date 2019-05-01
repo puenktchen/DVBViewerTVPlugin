@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Linq;
@@ -22,7 +21,7 @@ using MediaBrowser.Plugins.DVBViewer.Services.Entities;
 
 namespace MediaBrowser.Plugins.DVBViewer
 {
-    public class RecordingsChannel : IChannel, IHasCacheKey, ISupportsDelete, ISupportsLatestMedia, ISupportsMediaProbe, IHasFolderAttributes
+    public class RecordingsChannel : IChannel, ISupportsDelete, ISupportsLatestMedia, ISupportsMediaProbe, IHasFolderAttributes, IHasCacheKey, IHasChangeEvent, IDisableMediaSourceDisplay
     {
         public ILiveTvManager _liveTvManager;
 
@@ -82,21 +81,17 @@ namespace MediaBrowser.Plugins.DVBViewer
 
         public string GetCacheKey(string userId)
         {
-            var now = DateTimeOffset.UtcNow;
+            return String.Format("{0:yyyyMMddHHmmss}", DateTimeOffset.UtcNow);
+        }
 
-            var values = new List<string>();
+        public event EventHandler ContentChanged;
 
-            values.Add(now.DayOfYear.ToString(CultureInfo.InvariantCulture));
-            values.Add(now.Hour.ToString(CultureInfo.InvariantCulture));
-
-            double minute = now.Minute;
-            minute /= 5;
-
-            values.Add(Math.Floor(minute).ToString(CultureInfo.InvariantCulture));
-
-            values.Add(GetService().LastRecordingChange.Ticks.ToString(CultureInfo.InvariantCulture));
-
-            return string.Join("-", values.ToArray());
+        public void OnContentChanged()
+        {
+            if (ContentChanged != null)
+            {
+                ContentChanged(this, EventArgs.Empty);
+            }
         }
 
         public InternalChannelFeatures GetChannelFeatures()
@@ -166,11 +161,11 @@ namespace MediaBrowser.Plugins.DVBViewer
             return GetService().DeleteRecordingAsync(id, cancellationToken);
         }
 
-        public async Task<IEnumerable<ChannelItemInfo>> GetLatestMedia(ChannelLatestMediaSearch request, CancellationToken cancellationToken)
-        {
-            var result = await GetChannelItems(new InternalChannelItemQuery(), i => true, cancellationToken).ConfigureAwait(false);
-            return result.Items.OrderByDescending(i => i.DateModified);
-        }
+        //public async Task<IEnumerable<ChannelItemInfo>> GetLatestMedia(ChannelLatestMediaSearch request, CancellationToken cancellationToken)
+        //{
+        //    var result = await GetChannelItems(new InternalChannelItemQuery(), i => true, cancellationToken).ConfigureAwait(false);
+        //    return result.Items.OrderByDescending(i => i.DateModified);
+        //}
 
         public Task<ChannelItemResult> GetChannelItems(InternalChannelItemQuery query, CancellationToken cancellationToken)
         {
@@ -321,9 +316,9 @@ namespace MediaBrowser.Plugins.DVBViewer
                 result.Items.Add(new ChannelItemInfo
                 {
                     Name = "TV Shows",
-                    FolderType = ChannelFolderType.Container,
                     Id = "tvshows",
                     Type = ChannelItemType.Folder,
+                    FolderType = ChannelFolderType.Container,
                     ImageUrl = ChannelFolderImage("TV Shows")
                 });
             }
@@ -334,9 +329,9 @@ namespace MediaBrowser.Plugins.DVBViewer
                 result.Items.Add(new ChannelItemInfo
                 {
                     Name = "Movies",
-                    FolderType = ChannelFolderType.Container,
                     Id = "movies",
                     Type = ChannelItemType.Folder,
+                    FolderType = ChannelFolderType.Container,
                     ImageUrl = ChannelFolderImage("Movies")
                 });
             }
@@ -347,9 +342,9 @@ namespace MediaBrowser.Plugins.DVBViewer
                 result.Items.Add(new ChannelItemInfo
                 {
                     Name = "Kids",
-                    FolderType = ChannelFolderType.Container,
                     Id = "kids",
                     Type = ChannelItemType.Folder,
+                    FolderType = ChannelFolderType.Container,
                     ImageUrl = ChannelFolderImage("Kids")
                 });
             }
@@ -360,9 +355,9 @@ namespace MediaBrowser.Plugins.DVBViewer
                 result.Items.Add(new ChannelItemInfo
                 {
                     Name = "News & Documentary",
-                    FolderType = ChannelFolderType.Container,
                     Id = "news",
                     Type = ChannelItemType.Folder,
+                    FolderType = ChannelFolderType.Container,
                     ImageUrl = ChannelFolderImage("News & Documentary")
                 });
             }
@@ -373,9 +368,9 @@ namespace MediaBrowser.Plugins.DVBViewer
                 result.Items.Add(new ChannelItemInfo
                 {
                     Name = "Sports",
-                    FolderType = ChannelFolderType.Container,
                     Id = "sports",
                     Type = ChannelItemType.Folder,
+                    FolderType = ChannelFolderType.Container,
                     ImageUrl = ChannelFolderImage("Sports")
                 });
             }
@@ -386,9 +381,9 @@ namespace MediaBrowser.Plugins.DVBViewer
                 result.Items.Add(new ChannelItemInfo
                 {
                     Name = "Live Shows",
-                    FolderType = ChannelFolderType.Container,
                     Id = "live",
                     Type = ChannelItemType.Folder,
+                    FolderType = ChannelFolderType.Container,
                     ImageUrl = ChannelFolderImage("Live Shows")
                 });
             }
@@ -399,9 +394,9 @@ namespace MediaBrowser.Plugins.DVBViewer
                 result.Items.Add(new ChannelItemInfo
                 {
                     Name = "Other Shows",
-                    FolderType = ChannelFolderType.Container,
                     Id = "others",
                     Type = ChannelItemType.Folder,
+                    FolderType = ChannelFolderType.Container,
                     ImageUrl = ChannelFolderImage("Other Shows"),
                 });
             }
@@ -428,9 +423,10 @@ namespace MediaBrowser.Plugins.DVBViewer
             {
                 Name = i.Key,
                 SeriesName = i.Key,
-                FolderType = ChannelFolderType.Container,
                 Id = "series_" + i.Key.GetMD5().ToString("N"),
                 Type = ChannelItemType.Folder,
+                FolderType = ChannelFolderType.Container,
+                DateModified = allRecordings.Where(r => r.Name.Equals(i.Key)).OrderByDescending(d => d.StartDate).Select(d => d.StartDate).FirstOrDefault(),
                 ImageUrl = File.Exists(Path.Combine(pluginPath, "recordingposters", String.Join("", i.Key.Split(Path.GetInvalidFileNameChars())) + ".jpg")) ?
                            Path.Combine(pluginPath, "recordingposters", String.Join("", i.Key.Split(Path.GetInvalidFileNameChars())) + ".jpg") : String.Empty,
             }));
@@ -454,11 +450,11 @@ namespace MediaBrowser.Plugins.DVBViewer
             result.Items.AddRange(seasons.OrderBy(i => i.SeasonNumber).Select(i => new ChannelItemInfo
             {
                 Name = "Season " + i.SeasonNumber,
-                FolderType = ChannelFolderType.Container,
+                SeriesName = series,
+                IndexNumber = i.SeasonNumber,
                 Id = series + "_season_" + i.SeasonNumber.ToString().GetMD5().ToString("N"),
                 Type = ChannelItemType.Folder,
-                IndexNumber = i.SeasonNumber,
-                SeriesName = series,
+                FolderType = ChannelFolderType.Container,
             }));
 
             return result;
@@ -482,9 +478,10 @@ namespace MediaBrowser.Plugins.DVBViewer
             result.Items.AddRange(doublenames.OrderBy(i => i.Key).Select(i => new ChannelItemInfo
             {
                 Name = i.Key,
-                FolderType = ChannelFolderType.Container,
                 Id = "name_" + i.Key.GetMD5().ToString("N"),
                 Type = ChannelItemType.Folder,
+                FolderType = ChannelFolderType.Container,
+                DateModified = allRecordings.Where(r => r.Name.Equals(i.Key)).OrderByDescending(d => d.StartDate).Select(d => d.StartDate).FirstOrDefault(),
                 ImageUrl = File.Exists(Path.Combine(pluginPath, "recordingposters", String.Join("", i.Key.Split(Path.GetInvalidFileNameChars())) + ".jpg")) ?
                            Path.Combine(pluginPath, "recordingposters", String.Join("", i.Key.Split(Path.GetInvalidFileNameChars())) + ".jpg") : String.Empty,
             }));
@@ -506,20 +503,20 @@ namespace MediaBrowser.Plugins.DVBViewer
             var channelItem = new ChannelItemInfo
             {
                 Id = item.Id,
-                Name = !string.IsNullOrEmpty(item.EpisodeTitle) && (item.IsSeries || item.EpisodeNumber.HasValue && !item.IsMovie) ? item.EpisodeTitle : item.Name,
-                SeriesName = !string.IsNullOrEmpty(item.EpisodeTitle) && (item.IsSeries || item.EpisodeNumber.HasValue && !item.IsMovie) ? item.Name : null,
+                Name = !config.RecGenreMapping ? item.CombinedName : (!string.IsNullOrEmpty(item.EpisodeTitle) && (item.IsSeries || item.EpisodeNumber.HasValue && !item.IsMovie) ? item.EpisodeTitle : item.Name),
+                SeriesName = !config.RecGenreMapping ? null : (!string.IsNullOrEmpty(item.EpisodeTitle) && (item.IsSeries || item.EpisodeNumber.HasValue && !item.IsMovie) ? item.Name : null),
                 OriginalTitle = !string.IsNullOrEmpty(item.EpisodeTitle) && item.IsMovie ? item.EpisodeTitle : null,
                 IndexNumber = item.EpisodeNumber,
                 ParentIndexNumber = item.SeasonNumber,
                 ProductionYear = item.Year,
                 Overview = item.Overview,
                 Genres = item.Genres,
-                ImageUrl = (item.IsMovie && !string.IsNullOrEmpty(item.TmdbPoster)) ? item.TmdbPoster : item.ImageUrl,
                 DateCreated = item.StartDate,
                 DateModified = item.EndDate,
+                ImageUrl = item.ImageUrl,
 
                 Type = ChannelItemType.Media,
-                ContentType = config.RecGenreMapping ? ChannelMediaContentType.Clip : (item.IsMovie ? ChannelMediaContentType.Movie : (item.IsSeries || item.EpisodeNumber != null ? ChannelMediaContentType.Episode : ChannelMediaContentType.Clip)),
+                ContentType = !config.RecGenreMapping ? ChannelMediaContentType.Clip : (item.IsMovie ? ChannelMediaContentType.Movie : (item.IsSeries || item.EpisodeNumber != null ? ChannelMediaContentType.Episode : ChannelMediaContentType.Clip)),
                 MediaType = item.ChannelType == ChannelType.TV ? ChannelMediaType.Video : ChannelMediaType.Audio,
                 IsLiveStream = item.Status == RecordingStatus.InProgress,
                 Etag = item.Status.ToString(),
@@ -531,9 +528,7 @@ namespace MediaBrowser.Plugins.DVBViewer
                         Path = config.EnableDirectAccess && item.Status != RecordingStatus.InProgress ? item.Path : Plugin.StreamingProxy.GetRecordingStream(item.Id),
                         Protocol = item.Path.StartsWith("http", StringComparison.OrdinalIgnoreCase) ? MediaProtocol.Http : MediaProtocol.File,
                         Id = item.Id,
-                        SupportsProbing = item.Status == RecordingStatus.InProgress ? false : true,
                         IsInfiniteStream = item.Status == RecordingStatus.InProgress ? true : false,
-                        ReadAtNativeFramerate = item.Status == RecordingStatus.InProgress ? true : false,
                         RunTimeTicks = (item.EndDate - item.StartDate).Ticks,
 
                         RequiredHttpHeaders = config.RequiresAuthentication ?
