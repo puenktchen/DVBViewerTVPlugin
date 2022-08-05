@@ -2,60 +2,72 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using MediaBrowser.Common.Net;
+
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Plugins;
+using MediaBrowser.Controller.Drawing;
+using MediaBrowser.Controller.LiveTv;
+using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
-using MediaBrowser.Plugins.DVBViewer.Services.Proxies;
+
+using MediaBrowser.Plugins.DVBViewer.Helpers;
+using MediaBrowser.Plugins.DVBViewer.Services;
 
 namespace MediaBrowser.Plugins.DVBViewer
 {
-    /// <summary>
-    /// Class Plugin
-    /// </summary>
     public class Plugin : BasePlugin, IHasWebPages, IHasThumbImage, IHasTranslations
     {
-        public static TVServiceProxy TvProxy { get; private set; }
-        public static StreamingServiceProxy StreamingProxy { get; private set; }
+        public static Plugin Instance { get; private set; }
+        public static IConfigurationManager ConfigurationManager { get; set; }
+        public static IFfmpegManager FfmpegManager { get; set; }
+        public static IImageProcessor ImageProcessor { get; set; }
+        public static ILiveTvManager LiveTvManager { get; set; }
         public static ILogger Logger { get; set; }
+        public static IXmlSerializer XmlSerializer { get; set; }
+        public static ImageCreator ImageCreator { get; private set; }
+        public static StreamingService StreamingService { get; private set; }
+        public static TVService TVService { get; private set; }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Plugin" /> class.
-        /// </summary>
-        public Plugin(IXmlSerializer xmlSerializer, IHttpClient httpClient, 
-            IJsonSerializer jsonSerializer, ILogger logger)
+        public Plugin
+        (
+            IConfigurationManager configurationManager,
+            IFfmpegManager ffmpegManager,
+            IImageProcessor imageProcessor,
+            ILiveTvManager liveTvManager,
+            ILogger logger,
+            IXmlSerializer xmlSerializer
+        )
+            : base()
         {
             Instance = this;
 
+            ConfigurationManager = configurationManager;
+            FfmpegManager = ffmpegManager;
+            ImageProcessor = imageProcessor;
+            LiveTvManager = liveTvManager;
             Logger = logger;
+            XmlSerializer = xmlSerializer;
 
-            // Create our shared service proxies
-            StreamingProxy = new StreamingServiceProxy(httpClient, jsonSerializer, xmlSerializer);
-            TvProxy = new TVServiceProxy(httpClient, jsonSerializer, xmlSerializer, StreamingProxy);
+            ImageCreator = new ImageCreator();
+            StreamingService = new StreamingService();
+            TVService = new TVService();
         }
 
         public static string StaticName = "DVBViewer";
 
-        /// <summary>
-        /// Gets the name of the plugin
-        /// </summary>
-        /// <value>The name.</value>
         public override string Name
         {
             get { return StaticName; }
         }
 
-        /// <summary>
-        /// Gets the description.
-        /// </summary>
-        /// <value>The description.</value>
         public override string Description
         {
             get
             {
-                return "DVBViewer TV Plugin to enable Live TV streaming and scheduling.";
+                return "Live tv plugin to use DVBViewer Media Server as a tuner source for Emby";
             }
         }
 
@@ -79,12 +91,6 @@ namespace MediaBrowser.Plugins.DVBViewer
         {
             get { return _id; }
         }
-
-        /// <summary>
-        /// Gets the instance.
-        /// </summary>
-        /// <value>The instance.</value>
-        public static Plugin Instance { get; private set; }
 
         public IEnumerable<PluginPageInfo> GetPages()
         {

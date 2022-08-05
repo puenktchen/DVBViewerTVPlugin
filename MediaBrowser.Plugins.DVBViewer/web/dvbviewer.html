@@ -4,13 +4,13 @@
             <div class="verticalSection">
 
                 <div>
-                    <h3 class="typeName">DVB Viewer</h3>
+                    <h3 class="typeName">DVBViewer</h3>
                 </div>
 
                 <div class="inputContainer fldPath">
                     <div class="flex align-items-center">
                         <div class="flex-grow">
-                            <input is="emby-input" type="text" class="txtDevicePath" label="DVB Viewer Server Base Url:" required="required" autocomplete="off" />
+                            <input is="emby-input" type="text" class="txtDevicePath" label="DVBViewer Media Server base url:" required="required" autocomplete="off" />
                             <div class="fieldDescription">
                                 For example: http://localhost:8089
                             </div>
@@ -29,17 +29,41 @@
                 <div class="inputContainer">
                     <input is="emby-input" class="txtUsername" type="text" label="Username:" />
                     <div class="fieldDescription">
-                        The username specified in DVB Viewer
+                        The username specified in DVBViewer Media Server - Web Authentication
                     </div>
                 </div>
                 <div class="inputContainer">
                     <input is="emby-input" class="txtPassword" type="text" label="Password:" />
                     <div class="fieldDescription">
-                        The password specified in DVB Viewer
+                        The password specified in DVBViewer Media Server - Web Authentication
                     </div>
                 </div>
+
+                <br />
+
+                <div class="selectContainer">
+                    <select is="emby-select" id="selectRootChannelGroup" data-mini="true" label="DVBViewer root channel group:"></select>
+                </div>
+                <label class="checkboxContainer">
+                    <input is="emby-checkbox" type="checkbox" id="chkImportRadioChannels" />
+                    <span>Import radio channels</span>
+                </label>
+                <label class="checkboxContainer">
+                    <input is="emby-checkbox" type="checkbox" id="chkImportFavoritesOnly" />
+                    <span>Import favorite channels only</span>
+                </label>
+
+                <br />
+
+                <label class="checkboxContainer">
+                    <input is="emby-checkbox" type="checkbox" id="chkRemapProgramEvents" />
+                    <span>Remap program events (short description) to overview (extended description)</span>
+                </label>
+
             </div>
+
             <br />
+
             <div>
                 <button is="emby-button" type="submit" class="raised button-submit block">
                     <span>${Save}</span>

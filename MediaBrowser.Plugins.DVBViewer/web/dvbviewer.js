@@ -2,6 +2,7 @@
     'use strict';
 
     function onBackClick() {
+
         appRouter.back();
     }
 
@@ -25,15 +26,35 @@
 
         var providerOptions = JSON.parse(info.ProviderOptions || '{}');
 
-        view.querySelector('.txtDevicePath').value = info.Url || '';
-        view.querySelector('.txtFriendlyName').value = info.FriendlyName || '';
-
         view.querySelector('.txtStreamingPort').value = providerOptions.StreamingPort || '';
         view.querySelector('.txtUsername').value = providerOptions.Username || '';
         view.querySelector('.txtPassword').value = providerOptions.Password || '';
+
+        selectRootChannelGroups(view, providerOptions);
+
+        view.querySelector('#chkImportRadioChannels').checked = providerOptions.ImportRadioChannels || false;
+        view.querySelector('#chkImportFavoritesOnly').checked = providerOptions.ImportFavoritesOnly || false;
+        view.querySelector('#chkRemapProgramEvents').checked = providerOptions.RemapProgramEvents || false;
+
+        view.querySelector('.txtDevicePath').value = info.Url || '';
+        view.querySelector('.txtFriendlyName').value = info.FriendlyName || '';
+    }
+
+    function selectRootChannelGroups(view, providerOptions) {
+
+        fetch(ApiClient.getUrl("DVBViewer/RootChannelGroups"), {
+            method: "GET",
+        }).then((resp) => resp.json())
+            .then(function (groups) {
+                view.querySelector('#selectRootChannelGroup', view).innerHTML = groups.map(function (group) {
+                    var selectedText = group == providerOptions.RootChannelGroup ? " selected" : "";
+                    return '<option value="' + group + '"' + selectedText + '>' + group + '</option>';
+                });
+            });
     }
 
     function alertText(options) {
+
         require(['alert']).then(function (responses) {
             responses[0](options);
         });
@@ -61,6 +82,12 @@
                 providerOptions.Username = view.querySelector('.txtUsername').value;
                 providerOptions.Password = view.querySelector('.txtPassword').value;
                 providerOptions.StreamingPort = view.querySelector('.txtStreamingPort').value;
+
+                providerOptions.RootChannelGroup = view.querySelector('#selectRootChannelGroup').value;
+
+                providerOptions.ImportRadioChannels = view.querySelector('#chkImportRadioChannels').checked;
+                providerOptions.ImportFavoritesOnly = view.querySelector('#chkImportFavoritesOnly').checked;
+                providerOptions.RemapProgramEvents = view.querySelector('#chkRemapProgramEvents').checked;
 
                 info.FriendlyName = page.querySelector('.txtFriendlyName').value || null;
                 info.Url = page.querySelector('.txtDevicePath').value || null;
