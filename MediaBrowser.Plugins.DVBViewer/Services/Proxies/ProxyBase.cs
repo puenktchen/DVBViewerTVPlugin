@@ -10,9 +10,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Drawing;
 using MediaBrowser.Model.Serialization;
-using MediaBrowser.Plugins.DVBViewer.Configuration;
-using MediaBrowser.Plugins.DVBViewer.Interfaces;
-using MediaBrowser.Plugins.DVBViewer.Services.Exceptions;
+using MediaBrowser.Model.Logging;
 
 namespace MediaBrowser.Plugins.DVBViewer.Services.Proxies
 {
@@ -33,18 +31,9 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Proxies
             XmlSerializer = xmlSerializer;
         }
 
-        /// <summary>
-        /// Gets the plugin configuration.
-        /// </summary>
-        /// <value>
-        /// The plugin configuration.
-        /// </value>
-        public PluginConfiguration Configuration { get { return Plugin.Instance.Configuration;  } }
-
         protected IHttpClient HttpClient { get; private set; }
         public IJsonSerializer JsonSerializer { get; private set; }
         public IXmlSerializer XmlSerializer { get; private set; }
-        public IPluginLogger Logger { get; set; }
 
         /// <summary>
         /// Retrieves a URL for a given action, allows the endpoint to be overriden
@@ -52,13 +41,11 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Proxies
         /// <param name="action">The action.</param>
         /// <param name="args">The arguments.</param>
         /// <returns></returns>
-        protected String GetUrl(String action, params object[] args)
+        protected String GetUrl(string baseUrl, DVBViewerOptions configuration, String action, params object[] args)
         {
-            if (string.Equals(Configuration.ApiHostName, "localhost", StringComparison.CurrentCultureIgnoreCase) || Configuration.ApiHostName == "127.0.0.1")
-            {
-                Configuration.ApiHostName = LocalIPAddress().ToString();
-            }
-            var baseUrl = String.Format("http://{0}:{1}/", Configuration.ApiHostName, Configuration.ApiPortNumber);
+            // ensure it has a trailing /
+            baseUrl = baseUrl.TrimEnd('/') + "/";
+
             return String.Concat(baseUrl, String.Format(action, args));
         }
 
@@ -66,175 +53,28 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Proxies
         /// Retrieves data from the service for a given action
         /// </summary>
         /// <typeparam name="TResult">The type of the result.</typeparam>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        /// <param name="action">The action.</param>
-        /// <param name="args">The arguments.</param>
-        /// <returns></returns>
-        /// <exception cref="MediaBrowser.Plugins.DVBViewer.Services.Exceptions.ServiceAuthenticationException">There was a problem authenticating with the DVBViewer Media Server</exception>
-        protected TResult GetFromService<TResult>(CancellationToken cancellationToken, Type type, String action, params object[] args)
+        protected async Task<TResult> GetFromService<TResult>(string baseUrl, DVBViewerOptions configuration, CancellationToken cancellationToken, Type type, String action, params object[] args)
         {
-            var configuration = Plugin.Instance.Configuration;
             var request = new HttpRequestOptions()
             {
-                Url = GetUrl(action, args),
+                Url = GetUrl(baseUrl, configuration, action, args),
                 RequestContentType = "application/x-www-form-urlencoded",
                 LogErrorResponseBody = true,
                 LogRequest = true,
+                CancellationToken = cancellationToken
             };
 
-            if (configuration.RequiresAuthentication)
+            if (!string.IsNullOrEmpty(configuration.UserName))
             {
                 string authInfo = String.Format("{0}:{1}", configuration.UserName, configuration.Password);
                 authInfo = Convert.ToBase64String(Encoding.Default.GetBytes(authInfo));
                 request.RequestHeaders["Authorization"] = "Basic " + authInfo;
             }
 
-            try
+            using (var stream = await HttpClient.Get(request).ConfigureAwait(false))
             {
-                var task = HttpClient.Get(request);
-                using (var stream = task.Result)
-                {
-                    return (TResult)XmlSerializer.DeserializeFromStream(type, stream);
-                }
-                
+                return (TResult)XmlSerializer.DeserializeFromStream(type, stream);
             }
-            catch (AggregateException aggregateException)
-            {
-                var exception = aggregateException.Flatten().InnerExceptions.OfType<MediaBrowser.Model.Net.HttpException>().FirstOrDefault();
-                if (exception != null && exception.StatusCode == HttpStatusCode.Unauthorized)
-                {
-                    throw new ServiceAuthenticationException("There was a problem authenticating with the DVBViewer Media Server", exception);
-                }
-
-                throw;
-            }
-        }
-
-        protected Task GetToService(CancellationToken cancellationToken, String action, params object[] args)
-        {
-            var configuration = Plugin.Instance.Configuration;
-            var request = new HttpRequestOptions()
-            {
-                Url = GetUrl(action, args),
-                LogErrorResponseBody = true,
-                LogRequest = true,
-            };
-
-            if (configuration.RequiresAuthentication)
-            {
-                string authInfo = String.Format("{0}:{1}", configuration.UserName, configuration.Password);
-                authInfo = Convert.ToBase64String(Encoding.Default.GetBytes(authInfo));
-                request.RequestHeaders["Authorization"] = "Basic " + authInfo;
-            }
-
-            try
-            {
-                return Task.FromResult(HttpClient.GetResponse(request).Result.StatusCode);
-            }
-            catch (AggregateException aggregateException)
-            {
-                var exception = aggregateException.Flatten().InnerExceptions.OfType<Model.Net.HttpException>().FirstOrDefault();
-                if (exception != null && exception.StatusCode ==  HttpStatusCode.Unauthorized)
-                {
-                    throw new ServiceAuthenticationException("There was a problem authenticating with the DVBViewer Media Server", exception);
-                }
-
-                throw;
-            }
-        }
-
-        protected Task PostToService(CancellationToken cancellationToken, String action, Dictionary<string, string> header)
-        {
-            var configuration = Plugin.Instance.Configuration;
-            var request = new HttpRequestOptions()
-            {
-                Url = GetUrl(action),
-                RequestContentType = "application/xml",
-                //RequestContentType = "application/x-www-form-urlencoded",
-                UserAgent = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.87 Safari/537.36",
-                EnableKeepAlive = true,
-                LogErrorResponseBody = true,
-                LogRequest = true,
-            };
-
-            request.SetPostData(header);
-
-            if (configuration.RequiresAuthentication)
-            {
-                string authInfo = String.Format("{0}:{1}", configuration.UserName, configuration.Password);
-                authInfo = Convert.ToBase64String(Encoding.Default.GetBytes(authInfo));
-                request.RequestHeaders["Authorization"] = "Basic " + authInfo;
-            }
-
-            try
-            {
-                return Task.FromResult(HttpClient.Post(request));
-            }
-            catch (AggregateException aggregateException)
-            {
-                var exception = aggregateException.Flatten().InnerExceptions.OfType<MediaBrowser.Model.Net.HttpException>().FirstOrDefault();
-                if (exception != null && exception.StatusCode == HttpStatusCode.Unauthorized)
-                {
-                    throw new ServiceAuthenticationException("There was a problem authenticating with the DVBViewer Media Server", exception);
-                }
-
-                throw;
-            }
-        }
-
-        protected ImageStream GetImageFromService(CancellationToken cancellationToken, String type, String action, params object[] args)
-        {
-            var configuration = Plugin.Instance.Configuration;
-            var request = new HttpRequestOptions()
-            {
-                Url = GetUrl(action, args),
-                LogErrorResponseBody = true,
-                LogRequest = true,
-            };
-
-            if (configuration.RequiresAuthentication)
-            {
-                string authInfo = String.Format("{0}:{1}", configuration.UserName, configuration.Password);
-                authInfo = Convert.ToBase64String(Encoding.Default.GetBytes(authInfo));
-                request.RequestHeaders["Authorization"] = "Basic " + authInfo;
-            }
-
-            ImageStream imageStream = new ImageStream();
-            try
-            {
-                imageStream.Stream = HttpClient.GetResponse(request).Result.Content;
-
-                if (String.Equals(type, "jpg", StringComparison.OrdinalIgnoreCase))
-                    imageStream.Format = Model.Drawing.ImageFormat.Jpg;
-                if (String.Equals(type, "png", StringComparison.OrdinalIgnoreCase))
-                    imageStream.Format = Model.Drawing.ImageFormat.Png;
-                if (String.Equals(type, "bmp", StringComparison.OrdinalIgnoreCase))
-                    imageStream.Format = Model.Drawing.ImageFormat.Bmp;
-
-                return imageStream;
-            }
-            catch (AggregateException aggregateException)
-            {
-                var exception = aggregateException.Flatten().InnerExceptions.OfType<MediaBrowser.Model.Net.HttpException>().FirstOrDefault();
-                if (exception != null && exception.StatusCode == HttpStatusCode.Unauthorized)
-                {
-                    throw new ServiceAuthenticationException("There was a problem authenticating with the DVBViewer Media Server", exception);
-                }
-
-                throw;
-            }
-        }
-
-        private IPAddress LocalIPAddress()
-        {
-            if (!System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable())
-            {
-                return null;
-            }
-
-            IPHostEntry host = Dns.GetHostEntry(Dns.GetHostName());
-
-            return host.AddressList.FirstOrDefault(ip => ip.AddressFamily == AddressFamily.InterNetwork);
         }
     }
 }

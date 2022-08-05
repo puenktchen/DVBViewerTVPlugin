@@ -189,48 +189,6 @@ namespace MediaBrowser.Plugins.DVBViewer.Services.Entities
 
         [XmlAttribute("channel")]
         public string ChannelEPGID { get; set; }
-
-        public string ChannelId
-        {
-            get
-            {
-                if (ChannelEPGID != null)
-                {
-                    try
-                    {
-                        return Plugin.TvProxy.GetChannelList(new CancellationToken(), "DefaultChannelGroup").Root.ChannelGroup.SelectMany(c => c.DMSChannel)
-                        .Where(x => x.EPGID.Equals(ChannelEPGID))
-                        .First().Id;
-                    }
-                    catch (Exception)
-                    {
-                        return null;
-                    }
-                }
-                return null;
-            }
-        }
-
-        public string ChannelName
-        {
-            get
-            {
-                if (ChannelEPGID != null)
-                {
-                    try
-                    {
-                        return Plugin.TvProxy.GetChannelList(new CancellationToken(), "DefaultChannelGroup").Root.ChannelGroup.SelectMany(c => c.DMSChannel)
-                        .Where(x => x.EPGID.Equals(ChannelEPGID))
-                        .First().Name;
-                    }
-                    catch (Exception)
-                    {
-                        return null;
-                    }
-                }
-                return null;
-            }
-        }
     }
 
     public class Titles
